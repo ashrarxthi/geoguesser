@@ -686,14 +686,12 @@ const ALTS = {
   'turkiye':'Turkey',
   'palestine':'Palestine','west bank':'Palestine',
 };
-const LOOKUP = {};
-for(const [k,v] of Object.entries(C)) {
-  LOOKUP[norm(C[k].n)] = +k;
-}
 function norm(s){ return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z\s]/g,'').trim(); }
+const LOOKUP = {};
+for(const [k,c] of Object.entries(C)) LOOKUP[norm(c.n)] = +k;
 for(const [a,name] of Object.entries(ALTS)){
-  const id = Object.entries(C).find(([,c])=>c.n===name)?.[0];
-  if(id) LOOKUP[norm(a)] = +id;
+  const entry = Object.entries(C).find(([,c])=>c.n===name);
+  if(entry) LOOKUP[norm(a)] = +entry[0];
 }
 function lookup(s){ return LOOKUP[norm(s)]??null; }
 
