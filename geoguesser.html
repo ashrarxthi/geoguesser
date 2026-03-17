@@ -90,8 +90,8 @@ html,body { width:100%; height:100%; background:var(--bg); color:var(--text); fo
 .hero-stat span { color:var(--accent-bright); font-weight:500; }
 
 .mode-grid {
-  display:grid; grid-template-columns:1fr 1fr; gap:16px;
-  padding:28px 52px 36px; flex:1; position:relative; z-index:1;
+  display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;
+  padding:20px 52px 28px; flex:1; position:relative; z-index:1;
 }
 
 .mode-card {
@@ -145,6 +145,10 @@ html,body { width:100%; height:100%; background:var(--bg); color:var(--text); fo
 .badge-medium { background:rgba(240,180,41,.15); color:#f5c842; border:1px solid rgba(240,180,41,.2); }
 .badge-hard   { background:rgba(229,57,53,.15);  color:#e87070; border:1px solid rgba(229,57,53,.2); }
 .badge-learn  { background:rgba(33,150,243,.15);  color:#67b5f5; border:1px solid rgba(33,150,243,.2); }
+.badge-usa    { background:rgba(245,158,11,.15); color:#fbbf24; border:1px solid rgba(245,158,11,.2); }
+.mode-card.usa::before { background:linear-gradient(135deg, rgba(245,158,11,.5), transparent 60%); }
+.mode-card.usa::after  { background:radial-gradient(ellipse at 10% 10%, rgba(245,158,11,.12) 0%, transparent 65%); }
+.mode-card.usa:hover   { border-color:rgba(245,158,11,.5); }
 .card-title {
   font-size:1.3rem; font-weight:700; margin-bottom:8px;
   font-family:'Space Grotesk',sans-serif; letter-spacing:-.01em;
@@ -261,13 +265,28 @@ html,body { width:100%; height:100%; background:var(--bg); color:var(--text); fo
   position:absolute; inset:0;
   display:none; z-index:50; pointer-events:none;
 }
-.results-mask.active { display:block; }
+.results-mask.active { display:flex; }
 .results-box {
   position:absolute; right:0; top:0; bottom:0;
-  width:320px; background:var(--surf1); border-left:1px solid var(--border2);
-  display:flex; flex-direction:column; padding:28px 22px;
+  width:300px; background:var(--surf1); border-left:1px solid var(--border2);
+  display:flex; flex-direction:column; padding:24px 20px;
   overflow-y:auto; pointer-events:all; text-align:center;
 }
+.found-panel {
+  position:absolute; left:0; top:0; bottom:0;
+  width:220px; background:var(--surf1); border-right:1px solid var(--border2);
+  display:none; flex-direction:column; padding:18px 16px;
+  overflow-y:auto; pointer-events:all;
+}
+.found-panel.visible { display:flex; }
+.found-panel-title { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:10px; }
+.found-list { display:flex; flex-direction:column; gap:3px; overflow-y:auto; flex:1; }
+.found-item {
+  font-size:.72rem; color:var(--text); padding:4px 8px; border-radius:6px;
+  background:rgba(25,168,87,.08); border:1px solid rgba(25,168,87,.15);
+  color:#4acc88; display:flex; align-items:center; gap:5px;
+}
+.found-item::before { content:'✓'; font-size:.65rem; opacity:.7; }
 .res-emoji { font-size:2.8rem; }
 .res-title { font-family:'Bebas Neue',sans-serif; font-size:1.8rem; letter-spacing:.06em; margin:8px 0 2px; }
 .res-score { font-family:'JetBrains Mono',monospace; font-size:2.6rem; font-weight:700; color:var(--accent-bright); margin:6px 0; }
@@ -424,6 +443,13 @@ html,body { width:100%; height:100%; background:var(--bg); color:var(--text); fo
         <div class="card-desc">Study countries with capitals, populations, and map locations. Then quiz yourself on each region.</div>
         <div class="card-arrow">Explore →</div>
       </div>
+      <div class="mode-card usa" onclick="startUSA()" style="grid-column:1/-1; max-width:360px; margin:0 auto; width:100%;">
+        <span class="card-icon">🇺🇸</span>
+        <div class="card-top"><span class="card-badge badge-usa">Bonus · 10 min</span></div>
+        <div class="card-title">Fill the USA</div>
+        <div class="card-desc">Switch to the US map and name all 50 states. How many can you get?</div>
+        <div class="card-arrow">Play now →</div>
+      </div>
     </div>
   </div>
 </div>
@@ -447,6 +473,10 @@ html,body { width:100%; height:100%; background:var(--bg); color:var(--text); fo
       <div class="float-lives" id="float-lives"></div>
     </div>
     <div class="results-mask" id="res-mask">
+      <div class="found-panel" id="found-panel">
+        <div class="found-panel-title" id="found-panel-title">Countries you named</div>
+        <div class="found-list" id="found-list"></div>
+      </div>
       <div class="results-box">
         <div class="res-emoji" id="res-emoji">🎉</div>
         <div class="res-title" id="res-title">Well done!</div>
@@ -527,6 +557,44 @@ html,body { width:100%; height:100%; background:var(--bg); color:var(--text); fo
       <div class="learn-key-hint">&#8592; &#8594; arrow keys to navigate</div>
       <button class="btn-quiz" onclick="startQuiz()" style="margin-top:12px;">Quiz This Region &#8594;</button>
     </div>
+  </div>
+</div>
+
+<!-- USA SCREEN -->
+<div class="screen" id="s-usa">
+  <div class="hdr">
+    <button class="btn-back" onclick="goHome()">← Back</button>
+    <div class="hdr-title">🇺🇸 Fill the USA</div>
+    <div class="hdr-chips" id="usa-chips"></div>
+  </div>
+  <div style="flex:1;position:relative;overflow:hidden;background:var(--ocean);">
+    <svg class="world-map" id="usa-svg" viewBox="0 0 960 600" preserveAspectRatio="xMidYMid meet">
+      <rect width="960" height="600" fill="var(--ocean)"/>
+    </svg>
+    <div class="results-mask" id="usa-res-mask">
+      <div class="found-panel" id="usa-found-panel">
+        <div class="found-panel-title" id="usa-found-title">States you named</div>
+        <div class="found-list" id="usa-found-list"></div>
+      </div>
+      <div class="results-box">
+        <div class="res-emoji" id="usa-emoji">🎉</div>
+        <div class="res-title" id="usa-title">Well done!</div>
+        <div class="res-score" id="usa-score">0</div>
+        <div class="res-detail" id="usa-detail"></div>
+        <div class="missed-section" id="usa-missed-section" style="display:none">
+          <div class="missed-label" id="usa-missed-label">States you missed</div>
+          <div class="missed-list" id="usa-missed-list"></div>
+        </div>
+        <div class="res-btns">
+          <button class="btn-ghost" onclick="goHome()">Home</button>
+          <button class="btn-go" onclick="restartUSA()">Play Again</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="input-panel" id="usa-input-panel">
+    <input class="main-input" id="usa-input" type="text" placeholder="Type a US state…" autocomplete="off" autocorrect="off" spellcheck="false">
+    <button class="btn-go" onclick="submitUSA()">→</button>
   </div>
 </div>
 
@@ -888,6 +956,7 @@ function goHome(){
   resetMap('#g-svg');
   document.getElementById('res-mask').classList.remove('active');
   document.getElementById('missed-section').style.display='none';
+  document.getElementById('found-panel').classList.remove('visible');
   document.getElementById('float-card').style.display='none';
   document.getElementById('g-map-wrap').classList.remove('clickable');
   document.getElementById('g-input-panel').style.display='';
@@ -1190,6 +1259,13 @@ function endGame(){
       .map(([id,c])=>`<span class="missed-pill" onclick="highlightMissed(${id})">${c.n}</span>`)
       .join('');
     missedSec.style.display=missed.length?'block':'none';
+    // Populate found panel
+    const foundPanel=document.getElementById('found-panel');
+    const foundList=document.getElementById('found-list');
+    document.getElementById('found-panel-title').textContent=`${gs.found.size} countries you named`;
+    const foundEntries=Object.entries(C).filter(([id])=>gs.found.has(+id)).sort((a,b)=>a[1].n.localeCompare(b[1].n));
+    foundList.innerHTML=foundEntries.map(([,c])=>`<div class="found-item">${c.n}</div>`).join('');
+    foundPanel.classList.add('visible');
   } else {
     const max=gs.totalQ*10, pct=Math.round(gs.score/max*100);
     score=`${gs.score} pts`;
@@ -1277,6 +1353,167 @@ function toast(msg){
 // ═══════════════════════════════════════════════════════
 loadMap();
 document.getElementById('home-country-count').textContent = Object.keys(C).length;
+
+// ═══════════════════════════════════════════════════════
+//  USA MODE
+// ═══════════════════════════════════════════════════════
+const US_STATES = {
+  1:{n:"Alabama",abbr:"AL"},2:{n:"Alaska",abbr:"AK"},4:{n:"Arizona",abbr:"AZ"},
+  5:{n:"Arkansas",abbr:"AR"},6:{n:"California",abbr:"CA"},8:{n:"Colorado",abbr:"CO"},
+  9:{n:"Connecticut",abbr:"CT"},10:{n:"Delaware",abbr:"DE"},12:{n:"Florida",abbr:"FL"},
+  13:{n:"Georgia",abbr:"GA"},15:{n:"Hawaii",abbr:"HI"},16:{n:"Idaho",abbr:"ID"},
+  17:{n:"Illinois",abbr:"IL"},18:{n:"Indiana",abbr:"IN"},19:{n:"Iowa",abbr:"IA"},
+  20:{n:"Kansas",abbr:"KS"},21:{n:"Kentucky",abbr:"KY"},22:{n:"Louisiana",abbr:"LA"},
+  23:{n:"Maine",abbr:"ME"},24:{n:"Maryland",abbr:"MD"},25:{n:"Massachusetts",abbr:"MA"},
+  26:{n:"Michigan",abbr:"MI"},27:{n:"Minnesota",abbr:"MN"},28:{n:"Mississippi",abbr:"MS"},
+  29:{n:"Missouri",abbr:"MO"},30:{n:"Montana",abbr:"MT"},31:{n:"Nebraska",abbr:"NE"},
+  32:{n:"Nevada",abbr:"NV"},33:{n:"New Hampshire",abbr:"NH"},34:{n:"New Jersey",abbr:"NJ"},
+  35:{n:"New Mexico",abbr:"NM"},36:{n:"New York",abbr:"NY"},37:{n:"North Carolina",abbr:"NC"},
+  38:{n:"North Dakota",abbr:"ND"},39:{n:"Ohio",abbr:"OH"},40:{n:"Oklahoma",abbr:"OK"},
+  41:{n:"Oregon",abbr:"OR"},42:{n:"Pennsylvania",abbr:"PA"},44:{n:"Rhode Island",abbr:"RI"},
+  45:{n:"South Carolina",abbr:"SC"},46:{n:"South Dakota",abbr:"SD"},47:{n:"Tennessee",abbr:"TN"},
+  48:{n:"Texas",abbr:"TX"},49:{n:"Utah",abbr:"UT"},50:{n:"Vermont",abbr:"VT"},
+  51:{n:"Virginia",abbr:"VA"},53:{n:"Washington",abbr:"WA"},54:{n:"West Virginia",abbr:"WV"},
+  55:{n:"Wisconsin",abbr:"WI"},56:{n:"Wyoming",abbr:"WY"},
+};
+
+const US_ALTS = {
+  'cali':'California','tex':'Texas','penn':'Pennsylvania','penna':'Pennsylvania',
+  'mass':'Massachusetts','conn':'Connecticut','mich':'Michigan','minn':'Minnesota',
+  'tenn':'Tennessee','miss':'Mississippi','mont':'Montana','neb':'Nebraska',
+  'nev':'Nevada','okla':'Oklahoma','ore':'Oregon','wisc':'Wisconsin','wyo':'Wyoming',
+  'nd':'North Dakota','sd':'South Dakota','nc':'North Carolina','sc':'South Carolina',
+  'wv':'West Virginia','ri':'Rhode Island','nh':'New Hampshire','nj':'New Jersey',
+  'nm':'New Mexico','ny':'New York','new york state':'New York',
+};
+
+const US_LOOKUP = {};
+for(const [id,s] of Object.entries(US_STATES)){
+  US_LOOKUP[norm(s.n)] = +id;
+  US_LOOKUP[norm(s.abbr.toLowerCase())] = +id;
+}
+for(const [a,name] of Object.entries(US_ALTS)){
+  const entry = Object.entries(US_STATES).find(([,s])=>s.n===name);
+  if(entry) US_LOOKUP[norm(a)] = +entry[0];
+}
+function usaLookup(s){ return US_LOOKUP[norm(s)]??null; }
+
+let usaData=null, usaFound=new Set(), usaTimer=null, usaTimeLeft=600;
+
+async function loadUSAMap(){
+  if(usaData) return;
+  try{
+    const r = await fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json');
+    usaData = await r.json();
+  }catch(e){ console.error('USA map failed',e); }
+}
+
+function drawUSAMap(){
+  const svg=d3.select('#usa-svg');
+  svg.selectAll('.c-path,.state-label').remove();
+  const proj=d3.geoAlbersUsa().scale(1200).translate([480,300]);
+  const path=d3.geoPath().projection(proj);
+  const states=topojson.feature(usaData,usaData.objects.states);
+  svg.selectAll('.c-path').data(states.features).enter()
+    .append('path').attr('class','c-path')
+    .attr('d',path).attr('data-id',d=>+d.id);
+}
+
+function startUSA(){
+  loadUSAMap().then(()=>{
+    usaFound=new Set(); usaTimeLeft=600;
+    clearInterval(usaTimer);
+    drawUSAMap();
+    document.getElementById('usa-res-mask').classList.remove('active');
+    document.getElementById('usa-missed-section').style.display='none';
+    document.getElementById('usa-found-panel').classList.remove('visible');
+    document.getElementById('usa-input').value='';
+    show('s-usa');
+    updateUSAHUD();
+    usaTimer=setInterval(()=>{
+      usaTimeLeft--;
+      updateUSAHUD();
+      if(usaTimeLeft<=0){ clearInterval(usaTimer); endUSA(); }
+    },1000);
+    setTimeout(()=>document.getElementById('usa-input').focus(), 100);
+  });
+}
+
+function submitUSA(){
+  const inp=document.getElementById('usa-input');
+  const val=inp.value.trim(); if(!val) return;
+  const id=usaLookup(val);
+  if(id&&US_STATES[id]&&!usaFound.has(id)){
+    usaFound.add(id);
+    d3.select('#usa-svg').select(`[data-id="${id}"]`).attr('fill','var(--found-bright)').classed('found',true);
+    addUSALabel(id);
+    flash('ok'); toast(`✓ ${US_STATES[id].n}`);
+  } else if(id&&usaFound.has(id)){
+    flash('err'); toast('Already found!');
+  } else { flash('err'); }
+  inp.value=''; updateUSAHUD();
+}
+
+function addUSALabel(id){
+  if(!usaData) return;
+  const svg=d3.select('#usa-svg');
+  const proj=d3.geoAlbersUsa().scale(1200).translate([480,300]);
+  const path=d3.geoPath().projection(proj);
+  const states=topojson.feature(usaData,usaData.objects.states);
+  const feat=states.features.find(f=>+f.id===+id);
+  if(!feat) return;
+  const bounds=path.bounds(feat);
+  const dx=bounds[1][0]-bounds[0][0], dy=bounds[1][1]-bounds[0][1];
+  if(dx<14||dy<9) return;
+  const cx=(bounds[0][0]+bounds[1][0])/2, cy=(bounds[0][1]+bounds[1][1])/2;
+  const abbr=US_STATES[id].abbr;
+  const fs=Math.max(7,Math.min(13,dx/abbr.length*1.8));
+  svg.select(`.slabel-${id}`).remove();
+  svg.append('text').attr('class',`state-label slabel-${id}`)
+    .attr('x',cx).attr('y',cy)
+    .attr('text-anchor','middle').attr('dominant-baseline','middle')
+    .attr('font-size',fs).attr('font-family',"'Space Grotesk',sans-serif")
+    .attr('font-weight','700').attr('fill','rgba(255,255,255,.9)')
+    .attr('pointer-events','none').text(abbr);
+}
+
+function updateUSAHUD(){
+  const m=Math.floor(usaTimeLeft/60), s=String(usaTimeLeft%60).padStart(2,'0');
+  const danger=usaTimeLeft<60?'color:var(--red)':'';
+  document.getElementById('usa-chips').innerHTML=
+    `<div class="chip"><span class="v">${usaFound.size}/50</span></div>`+
+    `<div class="chip timer">Time <span class="v" style="${danger}">${m}:${s}</span></div>`;
+}
+
+function endUSA(){
+  clearInterval(usaTimer);
+  const missed=Object.entries(US_STATES).filter(([id])=>!usaFound.has(+id));
+  missed.forEach(([id])=>d3.select('#usa-svg').select(`[data-id="${id}"]`).attr('fill','#7f1d1d'));
+  const pct=Math.round(usaFound.size/50*100);
+  document.getElementById('usa-emoji').textContent=usaFound.size===50?'🏆':usaFound.size>=40?'🌟':usaFound.size>=25?'👍':'🌱';
+  document.getElementById('usa-title').textContent=usaFound.size===50?'All 50!':usaFound.size>=40?'So Close!':usaFound.size>=25?'Not Bad!':'Keep Practicing!';
+  document.getElementById('usa-score').textContent=`${usaFound.size} / 50`;
+  document.getElementById('usa-detail').textContent=`${pct}% of all states`;
+  document.getElementById('usa-missed-label').textContent=`${missed.length} states you missed`;
+  document.getElementById('usa-missed-list').innerHTML=missed.sort((a,b)=>a[1].n.localeCompare(b[1].n))
+    .map(([id,s])=>`<span class="missed-pill" onclick="flashUSAState(${id})">${s.n}</span>`).join('');
+  document.getElementById('usa-missed-section').style.display=missed.length?'block':'none';
+  const foundEntries=Object.entries(US_STATES).filter(([id])=>usaFound.has(+id)).sort((a,b)=>a[1].n.localeCompare(b[1].n));
+  document.getElementById('usa-found-title').textContent=`${usaFound.size} states named`;
+  document.getElementById('usa-found-list').innerHTML=foundEntries.map(([,s])=>`<div class="found-item">${s.n}</div>`).join('');
+  if(usaFound.size>0) document.getElementById('usa-found-panel').classList.add('visible');
+  document.getElementById('usa-res-mask').classList.add('active');
+}
+
+function flashUSAState(id){
+  const el=d3.select('#usa-svg').select(`[data-id="${id}"]`);
+  el.attr('fill','#ef4444'); setTimeout(()=>el.attr('fill','#7f1d1d'),600);
+}
+function restartUSA(){ startUSA(); }
+
+document.getElementById('usa-input').addEventListener('keydown',e=>{ if(e.key==='Enter') submitUSA(); });
+// Pre-load USA map in background
+loadUSAMap();
 </script>
 </body>
 </html>
