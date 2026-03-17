@@ -1436,24 +1436,23 @@ function showLearnCard(){
 function highlightLearnCountry(targetId){
   if(!worldData) return;
   const svg = d3.select('#l-svg');
-  // Reset all non-visited paths
+  // Reset all paths using style() — overrides CSS class fill
   svg.selectAll('path.c-path').each(function(){
     const el = d3.select(this);
     const id = +el.attr('data-id');
     if(learnVisited.has(id)){
-      el.attr('fill','rgba(33,150,243,0.35)'); // dim visited
+      el.style('fill','rgba(33,150,243,0.4)');
     } else {
-      el.attr('fill','var(--land)');
+      el.style('fill', null); // remove inline style, fall back to CSS
     }
   });
-  // Highlight current country bright
+  // Bright highlight for current country
   svg.selectAll('path.c-path').each(function(){
     const el = d3.select(this);
     if(+el.attr('data-id') === +targetId){
-      el.attr('fill','#2196f3');
+      el.style('fill','#2196f3');
     }
   });
-  // Mark as visited
   learnVisited.add(+targetId);
   zoomToCountry(targetId);
 }
