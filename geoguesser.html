@@ -1435,76 +1435,65 @@ function showLearnCard(){
 }
 
 function highlightLearnCountry(targetId){
-  if(!worldData) return;
+  if(!worldData||!lPath) return;
+  learnVisited.add(+targetId);
+
   const svg = d3.select('#l-svg');
-  // Reset all paths using style() — overrides CSS class fill
+  const g = svg.select('.map-g');
+  const countries = topojson.feature(worldData, worldData.objects.countries);
+
+  // 1. Reset all path fills
   svg.selectAll('path.c-path').each(function(){
     const el = d3.select(this);
     const id = +el.attr('data-id');
-    if(learnVisited.has(id)){
-      el.style('fill','rgba(33,150,243,0.4)');
-    } else {
-      el.style('fill', null); // remove inline style, fall back to CSS
-    }
-  });
-  // Bright highlight for current country
-  svg.selectAll('path.c-path').each(function(){
-    const el = d3.select(this);
-    if(+el.attr('data-id') === +targetId){
+    if(+id === +targetId){
       el.style('fill','#2196f3');
+    } else if(learnVisited.has(id)){
+      el.style('fill','rgba(33,150,243,0.35)');
+    } else {
+      el.style('fill', null);
     }
   });
-  // Add label for current country if not already labelled
-  const svgEl = d3.select('#l-svg');
-  if(!worldData||!lPath) { learnVisited.add(+targetId); zoomToCountry(targetId); return; }
-  const countries = topojson.feature(worldData, worldData.objects.countries);
 
-  function addLearnLabel(id, isCurrent){
-    // Don't re-add if already there
-    if(svgEl.select(`.llabel-${id}`).node()) return;
+  // 2. Remove ALL learn labels and redraw from scratch every time
+  svg.selectAll('.learn-country-label').remove();
+
+  // Helper to draw one label
+  function drawLabel(id, isCurrent){
     const feat = countries.features.find(f=>+f.id===+id);
     if(!feat) return;
     const bounds = lPath.bounds(feat);
     const dx = bounds[1][0]-bounds[0][0], dy = bounds[1][1]-bounds[0][1];
     const cx=(bounds[0][0]+bounds[1][0])/2, cy=(bounds[0][1]+bounds[1][1])/2;
     const name = learnList.find(c=>+c.id===+id)?.n || '';
-    const isSmall = dx<14 || dy<10;
+    const isSmall = dx<16 || dy<10;
     const fontSize = isSmall ? 8 : Math.max(8, Math.min(14, dx/name.length*1.5));
-    const labelY = isSmall ? cy-Math.max(dy,6)-5 : cy;
-    const g = svgEl.select('.map-g').node() ? svgEl.select('.map-g') : svgEl;
+    const labelY = isSmall ? cy - Math.max(dy/2, 8) - 6 : cy;
     g.append('text')
-      .attr('class',`learn-country-label llabel-${id}`)
-      .attr('x',cx).attr('y',labelY)
+      .attr('class','learn-country-label')
+      .attr('x', cx).attr('y', labelY)
       .attr('text-anchor','middle').attr('dominant-baseline','middle')
-      .attr('font-size',fontSize)
+      .attr('font-size', fontSize)
       .attr('font-family',"'Space Grotesk','DM Sans',sans-serif")
-      .attr('font-weight', isCurrent ? '700' : '500')
-      .style('fill', isCurrent ? '#fff' : 'rgba(255,255,255,0.55)')
+      .attr('font-weight', isCurrent ? '700' : '400')
+      .style('fill', isCurrent ? '#ffffff' : 'rgba(255,255,255,0.5)')
       .attr('pointer-events','none')
       .text(name);
     if(isSmall){
       g.append('line')
-        .attr('class',`learn-country-label llabel-${id}`)
-        .attr('x1',cx).attr('y1',labelY+4)
+        .attr('class','learn-country-label')
+        .attr('x1',cx).attr('y1',labelY+5)
         .attr('x2',cx).attr('y2',cy)
-        .attr('stroke','rgba(255,255,255,0.4)')
+        .attr('stroke','rgba(255,255,255,0.35)')
         .attr('stroke-width',0.8)
         .attr('pointer-events','none');
     }
   }
 
-  // Update existing visited labels to dim style
-  learnVisited.forEach(id=>{
-    const el = svgEl.select(`.llabel-${id} `);
-    svgEl.selectAll(`.llabel-${id}`)
-      .filter('text')
-      .attr('font-weight','500')
-      .style('fill','rgba(255,255,255,0.55)');
-  });
+  // Draw all visited labels (dim), then current on top (bright)
+  learnVisited.forEach(id=>{ if(+id !== +targetId) drawLabel(id, false); });
+  drawLabel(+targetId, true);
 
-  // Add current country label bright
-  learnVisited.add(+targetId);
-  addLearnLabel(+targetId, true);
   zoomToCountry(targetId);
 }
 
