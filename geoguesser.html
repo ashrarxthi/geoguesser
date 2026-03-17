@@ -436,19 +436,21 @@ html,body { width:100%; height:100%; background:var(--bg); color:var(--text); fo
         <div class="card-desc">A country name appears. Click the exact spot on the map with no highlights. Good luck.</div>
         <div class="card-arrow">Play now →</div>
       </div>
-      <div class="mode-card learn" onclick="showRegions()">
+      <div class="mode-card learn" onclick="showRegions()" style="grid-column:1/2;">
         <span class="card-icon">📚</span>
         <div class="card-top"><span class="card-badge badge-learn">Learn</span></div>
         <div class="card-title">Learn by Region</div>
         <div class="card-desc">Study countries with capitals, populations, and map locations. Then quiz yourself on each region.</div>
         <div class="card-arrow">Explore →</div>
       </div>
-      <div class="mode-card usa" onclick="startUSA()" style="grid-column:1/-1; max-width:360px; margin:0 auto; width:100%;">
-        <span class="card-icon">🇺🇸</span>
-        <div class="card-top"><span class="card-badge badge-usa">Bonus · 10 min</span></div>
-        <div class="card-title">Fill the USA</div>
-        <div class="card-desc">Switch to the US map and name all 50 states. How many can you get?</div>
-        <div class="card-arrow">Play now →</div>
+      <div class="mode-card usa" onclick="startUSA()" style="grid-column:2/4; display:flex; flex-direction:row; align-items:center; gap:24px;">
+        <span class="card-icon" style="font-size:3rem; flex-shrink:0;">🇺🇸</span>
+        <div style="flex:1;">
+          <div class="card-top"><span class="card-badge badge-usa">Bonus · 10 min</span></div>
+          <div class="card-title">Fill the USA</div>
+          <div class="card-desc">Switch to the US map and name all 50 states. Type full names or abbreviations.</div>
+          <div class="card-arrow">Play now →</div>
+        </div>
       </div>
     </div>
   </div>
