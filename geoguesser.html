@@ -1247,6 +1247,7 @@ function updateHUD(){
 // ── RESULTS ──
 function endGame(){
   clearInterval(gTimer);
+  document.getElementById('g-end').style.display='none';
   const mask=document.getElementById('res-mask');
   mask.classList.add('active');
   document.getElementById('float-card').style.display='none';
