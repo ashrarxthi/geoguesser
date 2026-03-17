@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoMaster</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07111e;
+  --surf1: #0d1e30;
+  --surf2: #122438;
+  --surf3: #17304a;
+  --border: #1e3d5c;
+  --border2: #2a5478;
+  --text: #e4eeff;
+  --muted: #4d7494;
+  --ocean: #091626;
+  --land: #1c3450;
+  --land-hover: #254468;
+  --found: #0d5c31;
+  --found-bright: #19a857;
+  --target-col: #c8890a;
+  --target-bright: #f0a81a;
+  --wrong-col: #9c1c1c;
+  --wrong-bright: #e53935;
+  --accent: #1a6fb5;
+  --accent-bright: #2196f3;
+  --gold: #f0b429;
+  --green: #19a857;
+  --red: #e53935;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { width:100%; height:100%; background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; overflow:hidden; }
+
+.screen { display:none; width:100%; height:100vh; flex-direction:column; }
+.screen.active { display:flex; }
+
+/* ── HOME ── */
+.home-wrap { display:flex; flex-direction:column; height:100vh; }
+.home-hero {
+  padding:36px 48px 28px;
+  display:flex; align-items:flex-end; gap:20px;
+  border-bottom:1px solid var(--border);
+  background: linear-gradient(180deg, #0a1a2f 0%, var(--bg) 100%);
+}
+.logo {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:4rem;
+  letter-spacing:.05em;
+  background: linear-gradient(135deg, #8bbff5 0%, #e4eeff 60%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  line-height:1;
+}
+.tagline { color:var(--muted); font-size:.85rem; letter-spacing:.12em; text-transform:uppercase; margin-bottom:6px; }
+.star-count { color:var(--muted); font-size:.8rem; font-family:'JetBrains Mono',monospace; }
+
+.mode-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:14px;
+  padding:24px 48px 32px; flex:1;
+}
+.mode-card {
+  background:var(--surf1); border:1px solid var(--border);
+  border-radius:16px; padding:26px 24px;
+  cursor:pointer; transition:all .22s ease;
+  display:flex; flex-direction:column; gap:10px;
+  position:relative; overflow:hidden;
+}
+.mode-card::after {
+  content:''; position:absolute; inset:0; opacity:0;
+  transition:opacity .22s; pointer-events:none;
+  border-radius:inherit;
+}
+.mode-card.easy::after   { background:radial-gradient(ellipse at 0% 0%, rgba(25,168,87,.1) 0%, transparent 65%); }
+.mode-card.medium::after { background:radial-gradient(ellipse at 0% 0%, rgba(240,180,41,.1) 0%, transparent 65%); }
+.mode-card.hard::after   { background:radial-gradient(ellipse at 0% 0%, rgba(229,57,53,.1) 0%, transparent 65%); }
+.mode-card.learn::after  { background:radial-gradient(ellipse at 0% 0%, rgba(33,150,243,.1) 0%, transparent 65%); }
+.mode-card:hover { transform:translateY(-3px); }
+.mode-card:hover::after { opacity:1; }
+.mode-card.easy:hover   { border-color:rgba(25,168,87,.45); }
+.mode-card.medium:hover { border-color:rgba(240,180,41,.45); }
+.mode-card.hard:hover   { border-color:rgba(229,57,53,.45); }
+.mode-card.learn:hover  { border-color:rgba(33,150,243,.45); }
+.mode-card:active { transform:translateY(-1px); }
+
+.card-icon { font-size:1.8rem; }
+.card-top { display:flex; align-items:center; gap:10px; }
+.card-badge {
+  font-size:.65rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase;
+  padding:3px 10px; border-radius:20px; display:inline-block;
+}
+.badge-easy   { background:rgba(25,168,87,.14); color:#4acc88; }
+.badge-medium { background:rgba(240,180,41,.14); color:#f5c842; }
+.badge-hard   { background:rgba(229,57,53,.14);  color:#e87070; }
+.badge-learn  { background:rgba(33,150,243,.14);  color:#67b5f5; }
+.card-title { font-size:1.15rem; font-weight:600; }
+.card-desc  { color:var(--muted); font-size:.83rem; line-height:1.6; flex:1; }
+
+/* ── SHARED HEADER ── */
+.hdr {
+  display:flex; align-items:center; gap:12px; padding:9px 20px;
+  background:var(--surf1); border-bottom:1px solid var(--border);
+  flex-shrink:0; min-height:52px;
+}
+.btn-back {
+  display:flex; align-items:center; gap:5px;
+  background:none; border:1px solid var(--border); color:var(--muted);
+  padding:6px 14px; border-radius:8px; cursor:pointer;
+  font-size:.78rem; font-family:'DM Sans',sans-serif;
+  transition:all .2s;
+}
+.btn-back:hover { border-color:var(--border2); color:var(--text); }
+.hdr-title { font-family:'Bebas Neue',sans-serif; font-size:1.35rem; letter-spacing:.08em; }
+.hdr-chips { display:flex; gap:8px; margin-left:auto; }
+.chip {
+  background:var(--surf2); border:1px solid var(--border);
+  border-radius:8px; padding:5px 14px;
+  font-family:'JetBrains Mono',monospace; font-size:.75rem;
+  display:flex; align-items:center; gap:6px; color:var(--muted);
+}
+.chip .v { color:var(--text); font-weight:500; }
+.chip.timer .v { color:var(--gold); }
+.chip.score .v { color:var(--green); }
+
+/* ── MAP ── */
+.map-wrap { flex:1; position:relative; overflow:hidden; background:var(--ocean); }
+.world-map { width:100%; height:100%; display:block; }
+.c-path { stroke:#091626; stroke-width:.35; fill:var(--land); cursor:default; transition:fill .25s ease; }
+.c-path.found { fill:var(--found)!important; cursor:default; }
+.c-path.glowing { fill:var(--target-bright)!important; animation:glow-pulse 1.3s ease-in-out infinite alternate; }
+.c-path.wrong-flash { fill:var(--wrong-bright)!important; transition:fill .05s; }
+@keyframes glow-pulse { from{fill:var(--target-col)} to{fill:var(--target-bright)} }
+.map-wrap.clickable .c-path:not(.found):not(.glowing) { cursor:crosshair; }
+.map-wrap.clickable .c-path:not(.found):not(.glowing):hover { fill:var(--land-hover); }
+
+/* ── FLOATING OVERLAYS ── */
+.float-card {
+  position:absolute; top:18px; left:50%; transform:translateX(-50%);
+  background:rgba(7,17,30,.9); backdrop-filter:blur(16px);
+  border:1px solid var(--border2); border-radius:14px;
+  padding:14px 28px; text-align:center; z-index:10;
+  min-width:280px; pointer-events:none;
+}
+.float-name {
+  font-family:'Bebas Neue',sans-serif; font-size:2.6rem;
+  letter-spacing:.06em; color:var(--gold); line-height:1;
+}
+.float-sub { color:var(--muted); font-size:.78rem; margin-top:4px; }
+.float-lives { display:flex; gap:3px; justify-content:center; margin-top:8px; font-size:1rem; }
+
+/* ── INPUT PANEL ── */
+.input-panel {
+  background:var(--surf1); border-top:1px solid var(--border);
+  padding:12px 20px; display:flex; align-items:center; gap:10px;
+  flex-shrink:0;
+}
+.main-input {
+  flex:1; background:var(--surf2); border:1.5px solid var(--border);
+  border-radius:10px; color:var(--text); padding:10px 16px;
+  font-size:.95rem; font-family:'DM Sans',sans-serif; outline:none;
+  transition:border-color .2s, background .15s;
+}
+.main-input:focus { border-color:var(--accent-bright); }
+.main-input.flash-ok  { border-color:var(--green); background:rgba(25,168,87,.08); animation:f-ok .5s; }
+.main-input.flash-err { border-color:var(--red);   animation:f-err .4s; }
+@keyframes f-ok  { 50%{background:rgba(25,168,87,.15)} }
+@keyframes f-err { 25%,75%{background:rgba(229,57,53,.1)} }
+.btn-go {
+  background:var(--accent-bright); border:none; color:#fff;
+  padding:10px 22px; border-radius:10px; cursor:pointer;
+  font-family:'DM Sans',sans-serif; font-weight:600; font-size:.88rem;
+  transition:opacity .2s;
+}
+.btn-go:hover { opacity:.85; }
+.btn-skip {
+  background:var(--surf2); border:1px solid var(--border); color:var(--muted);
+  padding:10px 16px; border-radius:10px; cursor:pointer;
+  font-family:'DM Sans',sans-serif; font-size:.82rem; transition:all .2s;
+}
+.btn-skip:hover { border-color:var(--border2); color:var(--text); }
+.btn-hint {
+  background:rgba(251,191,36,.1); border:1px solid rgba(251,191,36,.35); color:#fbbf24;
+  padding:10px 16px; border-radius:10px; cursor:pointer;
+  font-family:'DM Sans',sans-serif; font-size:.82rem; transition:all .2s; display:none;
+}
+.btn-hint:hover { background:rgba(251,191,36,.22); border-color:#fbbf24; }
+.hint-bubble {
+  position:absolute; top:10px; left:50%; transform:translateX(-50%);
+  background:rgba(18,28,48,.95); border:1px solid rgba(251,191,36,.4);
+  color:#fbbf24; font-size:.8rem; padding:7px 16px; border-radius:10px;
+  pointer-events:none; z-index:30; white-space:nowrap; display:none;
+  font-family:'DM Sans',sans-serif;
+}
+
+/* ── RESULTS ── */
+.results-mask {
+  position:absolute; inset:0;
+  display:none; z-index:50; pointer-events:none;
+}
+.results-mask.active { display:block; }
+.results-box {
+  position:absolute; right:0; top:0; bottom:0;
+  width:320px; background:var(--surf1); border-left:1px solid var(--border2);
+  display:flex; flex-direction:column; padding:28px 22px;
+  overflow-y:auto; pointer-events:all; text-align:center;
+}
+.res-emoji { font-size:2.8rem; }
+.res-title { font-family:'Bebas Neue',sans-serif; font-size:1.8rem; letter-spacing:.06em; margin:8px 0 2px; }
+.res-score { font-family:'JetBrains Mono',monospace; font-size:2.6rem; font-weight:700; color:var(--accent-bright); margin:6px 0; }
+.res-detail { color:var(--muted); font-size:.82rem; margin-bottom:14px; }
+.res-btns { display:flex; gap:8px; justify-content:center; margin-top:12px; }
+.missed-section { text-align:left; margin:14px 0 0; flex:1; display:flex; flex-direction:column; min-height:0; }
+.missed-label { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:8px; }
+.missed-list { display:flex; flex-wrap:wrap; gap:4px; overflow-y:auto; flex:1; align-content:flex-start; padding-right:2px; }
+.missed-pill {
+  background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.3);
+  color:#f87171; font-size:.7rem; padding:3px 8px; border-radius:20px;
+  cursor:pointer; transition:all .15s;
+}
+.missed-pill:hover { background:rgba(239,68,68,.3); }
+.btn-ghost {
+  background:none; border:1px solid var(--border2); color:var(--text);
+  padding:10px 24px; border-radius:10px; cursor:pointer;
+  font-family:'DM Sans',sans-serif; font-size:.88rem; transition:all .2s;
+}
+.btn-ghost:hover { background:var(--surf2); }
+
+/* ── TOAST ── */
+#toast {
+  position:fixed; top:60px; left:50%;
+  transform:translateX(-50%) translateY(-8px);
+  background:var(--surf3); border:1px solid var(--border2);
+  color:var(--text); padding:7px 16px; border-radius:8px;
+  font-size:.82rem; font-weight:500; opacity:0;
+  transition:all .22s ease; pointer-events:none; z-index:200;
+  white-space:nowrap;
+}
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ── LEARN REGION SELECT ── */
+.region-intro { padding:16px 40px 8px; color:var(--muted); font-size:.8rem; letter-spacing:.1em; text-transform:uppercase; }
+.region-grid {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:12px; padding:8px 40px 32px; flex:1;
+}
+.region-card {
+  background:var(--surf1); border:1px solid var(--border);
+  border-radius:12px; padding:22px 16px;
+  cursor:pointer; text-align:center; transition:all .2s;
+  display:flex; flex-direction:column; gap:6px; align-items:center;
+}
+.region-card:hover { border-color:var(--accent-bright); background:var(--surf2); transform:translateY(-2px); }
+.region-card .r-icon { font-size:1.8rem; }
+.region-card .r-name { font-size:.92rem; font-weight:600; }
+.region-card .r-count { font-size:.75rem; color:var(--muted); }
+
+/* ── LEARN STUDY ── */
+.learn-layout { display:flex; flex:1; overflow:hidden; }
+.learn-map { flex:1; position:relative; overflow:hidden; }
+.learn-panel {
+  width:310px; background:var(--surf1); border-left:1px solid var(--border);
+  display:flex; flex-direction:column; padding:22px 20px; gap:0;
+  overflow-y:auto;
+}
+.learn-ctr-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.learn-ctr { font-family:'JetBrains Mono',monospace; font-size:.7rem; color:var(--muted); }
+.learn-zoom-btn { font-size:.68rem; color:var(--muted); background:var(--surf2); border:1px solid var(--border); border-radius:6px; padding:2px 8px; cursor:pointer; }
+.learn-zoom-btn:hover { color:var(--text); border-color:var(--border2); }
+.learn-cname { font-family:'Bebas Neue',sans-serif; font-size:2.4rem; letter-spacing:.05em; line-height:1.1; }
+.learn-rtag {
+  display:inline-block; padding:3px 10px;
+  background:rgba(33,150,243,.12); color:#67b5f5;
+  border-radius:20px; font-size:.65rem; font-weight:600;
+  letter-spacing:.1em; text-transform:uppercase; margin:7px 0 14px;
+}
+.learn-stats {
+  display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px;
+}
+.learn-stat {
+  background:var(--surf2); border:1px solid var(--border);
+  border-radius:10px; padding:11px 13px;
+}
+.learn-stat-icon { font-size:1.1rem; margin-bottom:3px; }
+.learn-stat-label { font-size:.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; font-weight:600; }
+.learn-stat-val { font-size:.88rem; font-weight:600; color:var(--text); margin-top:2px; line-height:1.3; }
+.learn-stat.wide { grid-column:1/-1; }
+.learn-badge {
+  background:var(--surf2); border:1px solid var(--border); border-radius:10px;
+  padding:10px 13px; font-size:.78rem; color:var(--muted); line-height:1.5;
+  flex:1; min-height:52px;
+}
+.learn-prog { height:3px; background:var(--surf3); border-radius:2px; overflow:hidden; margin:14px 0 12px; }
+.learn-prog-fill { height:100%; background:linear-gradient(90deg,var(--accent-bright),#67b5f5); transition:width .4s ease; border-radius:2px; }
+.learn-nav { display:flex; gap:8px; }
+.learn-nav button {
+  flex:1; padding:10px; border-radius:9px; border:1px solid var(--border);
+  background:var(--surf2); color:var(--text); cursor:pointer;
+  font-family:'DM Sans',sans-serif; font-size:.82rem; transition:all .2s;
+}
+.learn-nav button:hover { border-color:var(--border2); background:var(--surf3); }
+.learn-key-hint { text-align:center; font-size:.63rem; color:var(--muted); margin-top:6px; }
+.btn-quiz {
+  width:100%; margin-top:12px; padding:11px; border-radius:9px;
+  border:none; background:linear-gradient(135deg,var(--accent-bright),#0d47a1);
+  color:#fff; cursor:pointer; font-family:'DM Sans',sans-serif;
+  font-weight:600; font-size:.88rem; transition:opacity .2s;
+}
+.btn-quiz:hover { opacity:.85; }
+
+/* loading */
+.map-loading {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:.85rem; color:var(--muted); font-family:'JetBrains Mono',monospace;
+  letter-spacing:.06em; text-transform:uppercase;
+}
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- HOME -->
+<div class="screen active" id="s-home">
+  <div class="home-wrap">
+    <div class="home-hero">
+      <div>
+        <div class="logo">GeoMaster</div>
+      </div>
+      <div>
+        <div class="tagline">How well do you know the world?</div>
+      </div>
+    </div>
+    <div class="mode-grid">
+      <div class="mode-card easy" onclick="startGame('easy')">
+        <div class="card-icon">⌨️</div>
+        <div class="card-top"><span class="card-badge badge-easy">Easy</span></div>
+        <div class="card-title">Fill the Map</div>
+        <div class="card-desc">Type any country name and watch it light up on the map. 15 minutes on the clock — how many can you name?</div>
+      </div>
+      <div class="mode-card medium" onclick="startGame('medium')">
+        <div class="card-icon">🔍</div>
+        <div class="card-top"><span class="card-badge badge-medium">Medium</span></div>
+        <div class="card-title">Name That Country</div>
+        <div class="card-desc">A country pulses gold on the map. Type its name before skipping. Race through 20 countries, no hints.</div>
+      </div>
+      <div class="mode-card hard" onclick="startGame('hard')">
+        <div class="card-icon">📍</div>
+        <div class="card-top"><span class="card-badge badge-hard">Hard</span></div>
+        <div class="card-title">Find It</div>
+        <div class="card-desc">A country name appears at the top. Click the right spot on the map. No highlights. 10 strikes. Good luck.</div>
+      </div>
+      <div class="mode-card learn" onclick="showRegions()">
+        <div class="card-icon">📚</div>
+        <div class="card-top"><span class="card-badge badge-learn">Learn</span></div>
+        <div class="card-title">Learn by Region</div>
+        <div class="card-desc">Study countries region by region with an interactive map and flashcard guide. Then quiz yourself!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GAME SCREEN -->
+<div class="screen" id="s-game">
+  <div class="hdr">
+    <button class="btn-back" onclick="goHome()">← Back</button>
+    <div class="hdr-title" id="g-title">Fill the Map</div>
+    <div class="hdr-chips" id="g-chips"></div>
+  </div>
+  <div class="map-wrap" id="g-map-wrap">
+    <svg class="world-map" id="g-svg" viewBox="0 0 960 500" preserveAspectRatio="xMidYMid meet">
+      <rect width="960" height="500" fill="var(--ocean)"/>
+    </svg>
+    <div class="map-loading" id="g-loading">Loading map…</div>
+    <div class="hint-bubble" id="hint-bubble"></div>
+    <div class="float-card" id="float-card" style="display:none">
+      <div class="float-name" id="float-name">???</div>
+      <div class="float-sub" id="float-sub"></div>
+      <div class="float-lives" id="float-lives"></div>
+    </div>
+    <div class="results-mask" id="res-mask">
+      <div class="results-box">
+        <div class="res-emoji" id="res-emoji">🎉</div>
+        <div class="res-title" id="res-title">Well done!</div>
+        <div class="res-score" id="res-score">0</div>
+        <div class="res-detail" id="res-detail"></div>
+        <div class="missed-section" id="missed-section" style="display:none">
+          <div class="missed-label" id="missed-label">Countries you missed</div>
+          <div class="missed-list" id="missed-list"></div>
+        </div>
+        <div class="res-btns">
+          <button class="btn-ghost" onclick="goHome()">Home</button>
+          <button class="btn-go" onclick="restartGame()">Play Again</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="input-panel" id="g-input-panel">
+    <input class="main-input" id="g-input" type="text" placeholder="Type a country name…" autocomplete="off" autocorrect="off" spellcheck="false">
+    <button class="btn-go" id="g-submit" onclick="handleSubmit()">→</button>
+    <button class="btn-skip" id="g-skip" onclick="handleSkip()" style="display:none">Skip</button>
+    <button class="btn-hint" id="g-hint" onclick="showHint()">💡 Hint</button>
+  </div>
+</div>
+
+<!-- LEARN REGION SELECT -->
+<div class="screen" id="s-regions">
+  <div class="hdr">
+    <button class="btn-back" onclick="goHome()">← Back</button>
+    <div class="hdr-title">Learn by Region</div>
+  </div>
+  <div class="region-intro">Choose a region to explore</div>
+  <div class="region-grid" id="region-grid"></div>
+</div>
+
+<!-- LEARN STUDY -->
+<div class="screen" id="s-learn">
+  <div class="hdr">
+    <button class="btn-back" onclick="backToRegions()">← Regions</button>
+    <div class="hdr-title" id="l-title">Europe</div>
+  </div>
+  <div class="learn-layout">
+    <div class="learn-map map-wrap">
+      <svg class="world-map" id="l-svg" viewBox="0 0 960 500" preserveAspectRatio="xMidYMid meet">
+        <rect width="960" height="500" fill="var(--ocean)"/>
+      </svg>
+      <div class="map-loading" id="l-loading" style="display:none">Loading…</div>
+    </div>
+    <div class="learn-panel">
+      <div class="learn-ctr-row">
+        <div class="learn-ctr" id="l-ctr">1 / 0</div>
+        <button class="learn-zoom-btn" onclick="learnResetZoom()">&#127757; World View</button>
+      </div>
+      <div class="learn-cname" id="l-cname">France</div>
+      <span class="learn-rtag" id="l-rtag">Europe</span>
+      <div class="learn-stats">
+        <div class="learn-stat wide">
+          <div class="learn-stat-icon">&#127963;&#65039;</div>
+          <div class="learn-stat-label">Capital</div>
+          <div class="learn-stat-val" id="l-capital">Paris</div>
+        </div>
+        <div class="learn-stat">
+          <div class="learn-stat-icon">&#128101;</div>
+          <div class="learn-stat-label">Population</div>
+          <div class="learn-stat-val" id="l-pop">&#8212;</div>
+        </div>
+        <div class="learn-stat">
+          <div class="learn-stat-icon">&#128208;</div>
+          <div class="learn-stat-label">Area</div>
+          <div class="learn-stat-val" id="l-area">&#8212;</div>
+        </div>
+      </div>
+      <div class="learn-badge" id="l-badge">&#8212;</div>
+      <div class="learn-prog"><div class="learn-prog-fill" id="l-prog"></div></div>
+      <div class="learn-nav">
+        <button onclick="learnPrev()">&#8592; Prev</button>
+        <button onclick="learnNext()">Next &#8594;</button>
+      </div>
+      <div class="learn-key-hint">&#8592; &#8594; arrow keys to navigate</div>
+      <button class="btn-quiz" onclick="startQuiz()" style="margin-top:12px;">Quiz This Region &#8594;</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════════════
+const C = {
+  4:{n:"Afghanistan",r:"Asia",cap:"Kabul",pop:43.0,area:652864},
+  8:{n:"Albania",r:"Europe",cap:"Tirana",pop:2.8,area:28748},
+  12:{n:"Algeria",r:"Africa",cap:"Algiers",pop:46.9,area:2381741},
+  24:{n:"Angola",r:"Africa",cap:"Luanda",pop:36.7,area:1246700},
+  32:{n:"Argentina",r:"South America",cap:"Buenos Aires",pop:46.6,area:2780400},
+  36:{n:"Australia",r:"Oceania",cap:"Canberra",pop:26.5,area:7692024},
+  40:{n:"Austria",r:"Europe",cap:"Vienna",pop:9.1,area:83871},
+  50:{n:"Bangladesh",r:"Asia",cap:"Dhaka",pop:173.0,area:147570},
+  56:{n:"Belgium",r:"Europe",cap:"Brussels",pop:11.7,area:30528},
+  64:{n:"Bhutan",r:"Asia",cap:"Thimphu",pop:0.8,area:38394},
+  68:{n:"Bolivia",r:"South America",cap:"Sucre",pop:12.4,area:1098581},
+  70:{n:"Bosnia and Herzegovina",r:"Europe",cap:"Sarajevo",pop:3.2,area:51197},
+  72:{n:"Botswana",r:"Africa",cap:"Gaborone",pop:2.6,area:581730},
+  76:{n:"Brazil",r:"South America",cap:"Brasília",pop:216.4,area:8515767},
+  84:{n:"Belize",r:"North America",cap:"Belmopan",pop:0.4,area:22966},
+  90:{n:"Solomon Islands",r:"Oceania",cap:"Honiara",pop:0.7,area:28896},
+  96:{n:"Brunei",r:"Asia",cap:"Bandar Seri Begawan",pop:0.5,area:5765},
+  100:{n:"Bulgaria",r:"Europe",cap:"Sofia",pop:6.5,area:110879},
+  104:{n:"Myanmar",r:"Asia",cap:"Naypyidaw",pop:54.4,area:676578},
+  108:{n:"Burundi",r:"Africa",cap:"Gitega",pop:13.2,area:27834},
+  112:{n:"Belarus",r:"Europe",cap:"Minsk",pop:9.4,area:207600},
+  116:{n:"Cambodia",r:"Asia",cap:"Phnom Penh",pop:17.2,area:181035},
+  120:{n:"Cameroon",r:"Africa",cap:"Yaoundé",pop:28.0,area:475442},
+  124:{n:"Canada",r:"North America",cap:"Ottawa",pop:38.9,area:9984670},
+  140:{n:"Central African Republic",r:"Africa",cap:"Bangui",pop:5.5,area:622984},
+  144:{n:"Sri Lanka",r:"Asia",cap:"Colombo",pop:22.2,area:65610},
+  148:{n:"Chad",r:"Africa",cap:"N'Djamena",pop:18.3,area:1284000},
+  152:{n:"Chile",r:"South America",cap:"Santiago",pop:19.6,area:756102},
+  156:{n:"China",r:"Asia",cap:"Beijing",pop:1409.7,area:9596960},
+  170:{n:"Colombia",r:"South America",cap:"Bogotá",pop:51.8,area:1141748},
+  178:{n:"Republic of the Congo",r:"Africa",cap:"Brazzaville",pop:6.1,area:342000},
+  180:{n:"DR Congo",r:"Africa",cap:"Kinshasa",pop:102.3,area:2344858},
+  188:{n:"Costa Rica",r:"North America",cap:"San José",pop:5.2,area:51100},
+  191:{n:"Croatia",r:"Europe",cap:"Zagreb",pop:3.9,area:56594},
+  192:{n:"Cuba",r:"North America",cap:"Havana",pop:11.2,area:109884},
+  196:{n:"Cyprus",r:"Europe",cap:"Nicosia",pop:1.3,area:9251},
+  203:{n:"Czech Republic",r:"Europe",cap:"Prague",pop:10.9,area:78868},
+  204:{n:"Benin",r:"Africa",cap:"Porto-Novo",pop:13.7,area:114763},
+  208:{n:"Denmark",r:"Europe",cap:"Copenhagen",pop:5.9,area:43094},
+  214:{n:"Dominican Republic",r:"North America",cap:"Santo Domingo",pop:11.3,area:48671},
+  218:{n:"Ecuador",r:"South America",cap:"Quito",pop:18.0,area:283561},
+  222:{n:"El Salvador",r:"North America",cap:"San Salvador",pop:6.3,area:21041},
+  226:{n:"Equatorial Guinea",r:"Africa",cap:"Malabo",pop:1.5,area:28051},
+  231:{n:"Ethiopia",r:"Africa",cap:"Addis Ababa",pop:126.5,area:1104300},
+  232:{n:"Eritrea",r:"Africa",cap:"Asmara",pop:3.7,area:117600},
+  233:{n:"Estonia",r:"Europe",cap:"Tallinn",pop:1.4,area:45228},
+  242:{n:"Fiji",r:"Oceania",cap:"Suva",pop:0.9,area:18272},
+  246:{n:"Finland",r:"Europe",cap:"Helsinki",pop:5.5,area:338145},
+  250:{n:"France",r:"Europe",cap:"Paris",pop:68.4,area:551695},
+  262:{n:"Djibouti",r:"Africa",cap:"Djibouti",pop:1.1,area:23200},
+  266:{n:"Gabon",r:"Africa",cap:"Libreville",pop:2.4,area:267668},
+  268:{n:"Georgia",r:"Asia",cap:"Tbilisi",pop:3.7,area:69700},
+  270:{n:"Gambia",r:"Africa",cap:"Banjul",pop:2.7,area:11295},
+  276:{n:"Germany",r:"Europe",cap:"Berlin",pop:84.4,area:357114},
+  288:{n:"Ghana",r:"Africa",cap:"Accra",pop:33.5,area:238533},
+  300:{n:"Greece",r:"Europe",cap:"Athens",pop:10.4,area:131957},
+  320:{n:"Guatemala",r:"North America",cap:"Guatemala City",pop:17.8,area:108889},
+  324:{n:"Guinea",r:"Africa",cap:"Conakry",pop:13.5,area:245857},
+  328:{n:"Guyana",r:"South America",cap:"Georgetown",pop:0.8,area:214969},
+  332:{n:"Haiti",r:"North America",cap:"Port-au-Prince",pop:11.7,area:27750},
+  340:{n:"Honduras",r:"North America",cap:"Tegucigalpa",pop:10.3,area:112492},
+  348:{n:"Hungary",r:"Europe",cap:"Budapest",pop:9.7,area:93028},
+  356:{n:"India",r:"Asia",cap:"New Delhi",pop:1441.7,area:3287263},
+  360:{n:"Indonesia",r:"Asia",cap:"Jakarta",pop:278.7,area:1904569},
+  364:{n:"Iran",r:"Asia",cap:"Tehran",pop:89.2,area:1648195},
+  368:{n:"Iraq",r:"Asia",cap:"Baghdad",pop:42.2,area:438317},
+  372:{n:"Ireland",r:"Europe",cap:"Dublin",pop:5.2,area:70273},
+  376:{n:"Israel",r:"Asia",cap:"Jerusalem",pop:9.7,area:20770},
+  380:{n:"Italy",r:"Europe",cap:"Rome",pop:59.3,area:301340},
+  384:{n:"Ivory Coast",r:"Africa",cap:"Yamoussoukro",pop:27.5,area:322463},
+  388:{n:"Jamaica",r:"North America",cap:"Kingston",pop:2.8,area:10991},
+  392:{n:"Japan",r:"Asia",cap:"Tokyo",pop:124.5,area:377975},
+  398:{n:"Kazakhstan",r:"Asia",cap:"Astana",pop:19.6,area:2724900},
+  400:{n:"Jordan",r:"Asia",cap:"Amman",pop:10.8,area:89342},
+  404:{n:"Kenya",r:"Africa",cap:"Nairobi",pop:55.1,area:580367},
+  408:{n:"North Korea",r:"Asia",cap:"Pyongyang",pop:25.9,area:120538},
+  410:{n:"South Korea",r:"Asia",cap:"Seoul",pop:51.7,area:100210},
+  414:{n:"Kuwait",r:"Asia",cap:"Kuwait City",pop:4.9,area:17818},
+  417:{n:"Kyrgyzstan",r:"Asia",cap:"Bishkek",pop:7.1,area:199951},
+  418:{n:"Laos",r:"Asia",cap:"Vientiane",pop:7.5,area:236800},
+  422:{n:"Lebanon",r:"Asia",cap:"Beirut",pop:5.6,area:10452},
+  426:{n:"Lesotho",r:"Africa",cap:"Maseru",pop:2.3,area:30355},
+  428:{n:"Latvia",r:"Europe",cap:"Riga",pop:1.8,area:64589},
+  430:{n:"Liberia",r:"Africa",cap:"Monrovia",pop:5.4,area:111369},
+  434:{n:"Libya",r:"Africa",cap:"Tripoli",pop:7.2,area:1759540},
+  440:{n:"Lithuania",r:"Europe",cap:"Vilnius",pop:2.8,area:65300},
+  442:{n:"Luxembourg",r:"Europe",cap:"Luxembourg City",pop:0.7,area:2586},
+  450:{n:"Madagascar",r:"Africa",cap:"Antananarivo",pop:29.6,area:587041},
+  454:{n:"Malawi",r:"Africa",cap:"Lilongwe",pop:20.4,area:118484},
+  458:{n:"Malaysia",r:"Asia",cap:"Kuala Lumpur",pop:34.3,area:329847},
+  466:{n:"Mali",r:"Africa",cap:"Bamako",pop:23.3,area:1240192},
+  478:{n:"Mauritania",r:"Africa",cap:"Nouakchott",pop:4.7,area:1030700},
+  484:{n:"Mexico",r:"North America",cap:"Mexico City",pop:128.5,area:1964375},
+  496:{n:"Mongolia",r:"Asia",cap:"Ulaanbaatar",pop:3.4,area:1564116},
+  498:{n:"Moldova",r:"Europe",cap:"Chișinău",pop:2.6,area:33846},
+  499:{n:"Montenegro",r:"Europe",cap:"Podgorica",pop:0.6,area:13812},
+  504:{n:"Morocco",r:"Africa",cap:"Rabat",pop:37.8,area:446550},
+  508:{n:"Mozambique",r:"Africa",cap:"Maputo",pop:33.9,area:801590},
+  512:{n:"Oman",r:"Asia",cap:"Muscat",pop:4.5,area:309500},
+  516:{n:"Namibia",r:"Africa",cap:"Windhoek",pop:2.6,area:824292},
+  524:{n:"Nepal",r:"Asia",cap:"Kathmandu",pop:30.0,area:147181},
+  528:{n:"Netherlands",r:"Europe",cap:"Amsterdam",pop:17.9,area:41543},
+  554:{n:"New Zealand",r:"Oceania",cap:"Wellington",pop:5.1,area:270467},
+  558:{n:"Nicaragua",r:"North America",cap:"Managua",pop:6.8,area:130375},
+  562:{n:"Niger",r:"Africa",cap:"Niamey",pop:26.2,area:1267000},
+  566:{n:"Nigeria",r:"Africa",cap:"Abuja",pop:224.0,area:923768},
+  578:{n:"Norway",r:"Europe",cap:"Oslo",pop:5.5,area:385207},
+  586:{n:"Pakistan",r:"Asia",cap:"Islamabad",pop:231.4,area:881913},
+  591:{n:"Panama",r:"North America",cap:"Panama City",pop:4.4,area:75417},
+  598:{n:"Papua New Guinea",r:"Oceania",cap:"Port Moresby",pop:10.1,area:462840},
+  600:{n:"Paraguay",r:"South America",cap:"Asunción",pop:7.4,area:406752},
+  604:{n:"Peru",r:"South America",cap:"Lima",pop:33.4,area:1285216},
+  608:{n:"Philippines",r:"Asia",cap:"Manila",pop:114.2,area:300000},
+  616:{n:"Poland",r:"Europe",cap:"Warsaw",pop:37.7,area:312696},
+  620:{n:"Portugal",r:"Europe",cap:"Lisbon",pop:10.3,area:92212},
+  624:{n:"Guinea-Bissau",r:"Africa",cap:"Bissau",pop:2.1,area:36125},
+  634:{n:"Qatar",r:"Asia",cap:"Doha",pop:2.7,area:11586},
+  642:{n:"Romania",r:"Europe",cap:"Bucharest",pop:19.0,area:238397},
+  643:{n:"Russia",r:"Europe",cap:"Moscow",pop:144.4,area:17098242},
+  646:{n:"Rwanda",r:"Africa",cap:"Kigali",pop:14.3,area:26338},
+  682:{n:"Saudi Arabia",r:"Asia",cap:"Riyadh",pop:36.9,area:2149690},
+  686:{n:"Senegal",r:"Africa",cap:"Dakar",pop:17.7,area:196722},
+  688:{n:"Serbia",r:"Europe",cap:"Belgrade",pop:6.8,area:77474},
+  694:{n:"Sierra Leone",r:"Africa",cap:"Freetown",pop:8.4,area:71740},
+  703:{n:"Slovakia",r:"Europe",cap:"Bratislava",pop:5.5,area:49035},
+  705:{n:"Slovenia",r:"Europe",cap:"Ljubljana",pop:2.1,area:20273},
+  706:{n:"Somalia",r:"Africa",cap:"Mogadishu",pop:18.1,area:637657},
+  710:{n:"South Africa",r:"Africa",cap:"Pretoria",pop:60.1,area:1219090},
+  716:{n:"Zimbabwe",r:"Africa",cap:"Harare",pop:16.7,area:390757},
+  724:{n:"Spain",r:"Europe",cap:"Madrid",pop:47.4,area:505990},
+  728:{n:"South Sudan",r:"Africa",cap:"Juba",pop:11.1,area:619745},
+  729:{n:"Sudan",r:"Africa",cap:"Khartoum",pop:47.4,area:1861484},
+  740:{n:"Suriname",r:"South America",cap:"Paramaribo",pop:0.6,area:163820},
+  748:{n:"Eswatini",r:"Africa",cap:"Mbabane",pop:1.2,area:17364},
+  752:{n:"Sweden",r:"Europe",cap:"Stockholm",pop:10.5,area:450295},
+  756:{n:"Switzerland",r:"Europe",cap:"Bern",pop:8.8,area:41285},
+  760:{n:"Syria",r:"Asia",cap:"Damascus",pop:22.1,area:185180},
+  762:{n:"Tajikistan",r:"Asia",cap:"Dushanbe",pop:10.1,area:143100},
+  764:{n:"Thailand",r:"Asia",cap:"Bangkok",pop:71.8,area:513120},
+  768:{n:"Togo",r:"Africa",cap:"Lomé",pop:8.9,area:56785},
+  780:{n:"Trinidad and Tobago",r:"North America",cap:"Port of Spain",pop:1.5,area:5130},
+  788:{n:"Tunisia",r:"Africa",cap:"Tunis",pop:12.1,area:163610},
+  792:{n:"Turkey",r:"Asia",cap:"Ankara",pop:85.3,area:783562},
+  795:{n:"Turkmenistan",r:"Asia",cap:"Ashgabat",pop:6.3,area:488100},
+  800:{n:"Uganda",r:"Africa",cap:"Kampala",pop:48.6,area:241038},
+  804:{n:"Ukraine",r:"Europe",cap:"Kyiv",pop:43.5,area:603550},
+  784:{n:"United Arab Emirates",r:"Asia",cap:"Abu Dhabi",pop:9.9,area:83600},
+  807:{n:"North Macedonia",r:"Europe",cap:"Skopje",pop:2.1,area:25713},
+  826:{n:"United Kingdom",r:"Europe",cap:"London",pop:67.7,area:243610},
+  834:{n:"Tanzania",r:"Africa",cap:"Dodoma",pop:65.5,area:945087},
+  840:{n:"United States",r:"North America",cap:"Washington D.C.",pop:335.9,area:9833520},
+  854:{n:"Burkina Faso",r:"Africa",cap:"Ouagadougou",pop:22.7,area:274222},
+  858:{n:"Uruguay",r:"South America",cap:"Montevideo",pop:3.7,area:176215},
+  860:{n:"Uzbekistan",r:"Asia",cap:"Tashkent",pop:36.6,area:448978},
+  862:{n:"Venezuela",r:"South America",cap:"Caracas",pop:29.0,area:916445},
+  704:{n:"Vietnam",r:"Asia",cap:"Hanoi",pop:98.2,area:331212},
+  887:{n:"Yemen",r:"Asia",cap:"Sana'a",pop:34.4,area:527968},
+  894:{n:"Zambia",r:"Africa",cap:"Lusaka",pop:20.0,area:752618},
+};
+
+// Build name lookup
+function norm(s){ return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z\s]/g,'').trim(); }
+const LOOKUP = {};
+for(const [id,c] of Object.entries(C)) LOOKUP[norm(c.n)] = +id;
+const ALTS = {
+  'usa':840,'us':840,'america':840,'united states of america':840,
+  'uk':826,'britain':826,'great britain':826,'england':826,
+  'drc':180,'dr congo':180,'congo dr':180,'democratic republic of congo':180,'democratic republic of the congo':180,
+  'congo republic':178,'republic of congo':178,
+  'czechia':203,'czech':203,
+  'ivory coast':384,'cote divoire':384,
+  'burma':104,
+  'turkiye':792,
+  'swaziland':748,
+  'macedonia':807,
+  'east timor':626,
+  'south korea':410,'north korea':408,,
+  20:{n:"Andorra",r:"Europe",cap:"Andorra la Vella",pop:0.08,area:468},
+  28:{n:"Antigua and Barbuda",r:"North America",cap:"Saint John's",pop:0.1,area:442},
+  44:{n:"Bahamas",r:"North America",cap:"Nassau",pop:0.4,area:13943},
+  48:{n:"Bahrain",r:"Asia",cap:"Manama",pop:1.7,area:778},
+  52:{n:"Barbados",r:"North America",cap:"Bridgetown",pop:0.3,area:430},
+  132:{n:"Cape Verde",r:"Africa",cap:"Praia",pop:0.6,area:4033},
+  174:{n:"Comoros",r:"Africa",cap:"Moroni",pop:0.9,area:2235},
+  212:{n:"Dominica",r:"North America",cap:"Roseau",pop:0.07,area:751},
+  308:{n:"Grenada",r:"North America",cap:"St. George's",pop:0.1,area:344},
+  352:{n:"Iceland",r:"Europe",cap:"Reykjavik",pop:0.4,area:103000},
+  438:{n:"Liechtenstein",r:"Europe",cap:"Vaduz",pop:0.04,area:160},
+  462:{n:"Maldives",r:"Asia",cap:"Male",pop:0.5,area:298},
+  470:{n:"Malta",r:"Europe",cap:"Valletta",pop:0.5,area:316},
+  480:{n:"Mauritius",r:"Africa",cap:"Port Louis",pop:1.3,area:2040},
+  492:{n:"Monaco",r:"Europe",cap:"Monaco",pop:0.04,area:2},
+  275:{n:"Palestine",r:"Asia",cap:"Ramallah",pop:5.4,area:6020},
+  659:{n:"Saint Kitts and Nevis",r:"North America",cap:"Basseterre",pop:0.05,area:261},
+  662:{n:"Saint Lucia",r:"North America",cap:"Castries",pop:0.2,area:616},
+  670:{n:"Saint Vincent and the Grenadines",r:"North America",cap:"Kingstown",pop:0.1,area:389},
+  882:{n:"Samoa",r:"Oceania",cap:"Apia",pop:0.2,area:2842},
+  674:{n:"San Marino",r:"Europe",cap:"San Marino",pop:0.03,area:61},
+  678:{n:"Sao Tome and Principe",r:"Africa",cap:"Sao Tome",pop:0.2,area:964},
+  690:{n:"Seychelles",r:"Africa",cap:"Victoria",pop:0.1,area:452},
+  702:{n:"Singapore",r:"Asia",cap:"Singapore",pop:5.9,area:728},
+  626:{n:"Timor-Leste",r:"Asia",cap:"Dili",pop:1.3,area:14874},
+  776:{n:"Tonga",r:"Oceania",cap:"Nuku'alofa",pop:0.1,area:747},
+  548:{n:"Vanuatu",r:"Oceania",cap:"Port Vila",pop:0.3,area:12189},
+  296:{n:"Kiribati",r:"Oceania",cap:"South Tarawa",pop:0.1,area:811},
+  584:{n:"Marshall Islands",r:"Oceania",cap:"Majuro",pop:0.04,area:181},
+  583:{n:"Micronesia",r:"Oceania",cap:"Palikir",pop:0.1,area:702},
+  585:{n:"Palau",r:"Oceania",cap:"Ngerulmud",pop:0.02,area:459},
+  798:{n:"Tuvalu",r:"Oceania",cap:"Funafuti",pop:0.01,area:26},
+  520:{n:"Nauru",r:"Oceania",cap:"Yaren",pop:0.01,area:21}
+};
+for(const [a,id] of Object.entries(ALTS)) LOOKUP[norm(a)]=id;
+function lookup(s){ return LOOKUP[norm(s)]??null; }
+
+const REGIONS = [
+  {name:'Europe',      icon:'🏰', color:'#2196f3'},
+  {name:'Asia',        icon:'⛩️',  color:'#e91e63'},
+  {name:'Africa',      icon:'🦁', color:'#ff9800'},
+  {name:'North America',icon:'🗽', color:'#4caf50'},
+  {name:'South America',icon:'🌿', color:'#009688'},
+  {name:'Oceania',     icon:'🦘', color:'#9c27b0'},
+];
+
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+let worldData = null;
+let gMode = null, gs = {};
+let gTimer = null;
+let learnReg = null, learnIdx = 0, learnList = [];
+let lProj = null, lPath = null, lZoomed = false;
+
+// ═══════════════════════════════════════════════════════
+//  MAP SETUP
+// ═══════════════════════════════════════════════════════
+async function loadMap(){
+  try{
+    const r = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
+    worldData = await r.json();
+    drawMap('#g-svg','game');
+    drawMap('#l-svg','learn');
+    document.getElementById('g-loading').style.display='none';
+  }catch(e){
+    document.getElementById('g-loading').textContent='Map failed to load.';
+    console.error(e);
+  }
+}
+
+function drawMap(sel, which){
+  const svg = d3.select(sel);
+  svg.selectAll('.c-path,.grat,.ocean-rect,.map-g').remove();
+
+  const W=960, H=500;
+  const proj = d3.geoNaturalEarth1().scale(153).translate([W/2,H/2]);
+  const path = d3.geoPath().projection(proj);
+
+  if(which==='learn'){ lProj=proj; lPath=path; }
+
+  svg.insert('rect','*').attr('class','ocean-rect').attr('width',W).attr('height',H).attr('fill','var(--ocean)');
+
+  // Graticule
+  svg.append('path').datum(d3.geoGraticule()())
+    .attr('class','grat').attr('d',path)
+    .attr('fill','none').attr('stroke','#0d2035').attr('stroke-width',.3);
+
+  const g = svg.append('g').attr('class','map-g');
+  const countries = topojson.feature(worldData, worldData.objects.countries);
+
+  g.selectAll('.c-path').data(countries.features).enter()
+    .append('path').attr('class','c-path')
+    .attr('d',path)
+    .attr('data-id', d=>+d.id)
+    .on('click', function(ev,d){ onMapClick(+d.id, which); })
+    .on('mouseenter', function(ev,d){ onHover(this,+d.id,which,true); })
+    .on('mouseleave', function(ev,d){ onHover(this,+d.id,which,false); });
+}
+
+function onHover(el,id,which,enter){
+  if(which!=='game'||gMode!=='hard') return;
+  if(gs.found&&gs.found.has(id)) return;
+  d3.select(el).attr('fill', enter ? 'var(--land-hover)' : 'var(--land)');
+}
+
+function setFill(sel, id, fill){
+  d3.select(sel).select(`[data-id="${id}"]`).attr('fill', fill);
+}
+function resetMap(sel){
+  d3.select(sel).selectAll('.country-label').remove();
+  d3.select(sel).selectAll('.c-path')
+    .attr('fill','var(--land)')
+    .classed('glowing',false)
+    .classed('wrong-flash',false)
+    .classed('found',false);
+}
+
+// ═══════════════════════════════════════════════════════
+//  SCREEN NAV
+// ═══════════════════════════════════════════════════════
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function goHome(){
+  clearInterval(gTimer); gMode=null; gs={};
+  resetMap('#g-svg');
+  document.getElementById('res-mask').classList.remove('active');
+  document.getElementById('missed-section').style.display='none';
+  document.getElementById('float-card').style.display='none';
+  document.getElementById('g-map-wrap').classList.remove('clickable');
+  document.getElementById('g-input-panel').style.display='';
+  show('s-home');
+}
+function showRegions(){
+  const cnts={};
+  for(const c of Object.values(C)) cnts[c.r]=(cnts[c.r]||0)+1;
+  document.getElementById('region-grid').innerHTML = REGIONS.map(r=>
+    `<div class="region-card" onclick="startLearn('${r.name}')">
+      <div class="r-icon">${r.icon}</div>
+      <div class="r-name">${r.name}</div>
+      <div class="r-count">${cnts[r.name]||0} countries</div>
+    </div>`
+  ).join('');
+  show('s-regions');
+}
+function backToRegions(){ show('s-regions'); }
+
+// ═══════════════════════════════════════════════════════
+//  GAME MODES
+// ═══════════════════════════════════════════════════════
+function startGame(mode, questions=null){
+  gMode=mode;
+  gs={ found:new Set(), score:0, lives:10, targetId:null, totalQ:20, qNum:0, timeLeft:mode==='easy'?900:600, questions:[] };
+  clearInterval(gTimer);
+  resetMap('#g-svg');
+  document.getElementById('res-mask').style.display='none';
+  document.getElementById('float-card').style.display='none';
+  document.getElementById('g-map-wrap').classList.remove('clickable');
+  document.getElementById('g-input').value='';
+
+  const titles={easy:'⌨️ Fill the Map',medium:'🔍 Name That Country',hard:'📍 Find It'};
+  document.getElementById('g-title').textContent = titles[mode]||'Quiz';
+
+  const inp=document.getElementById('g-input');
+  const skip=document.getElementById('g-skip');
+  const submit=document.getElementById('g-submit');
+  const panel=document.getElementById('g-input-panel');
+
+  if(mode==='easy'){
+    inp.placeholder='Type any country name…';
+    inp.style.display=skip.style.display=''; submit.style.display=''; skip.style.display='none';
+    panel.style.display='';
+    if(questions){ gs.questions=questions; gs.totalQ=questions.length; }
+    startEasyTimer();
+  } else if(mode==='medium'){
+    inp.placeholder='Type the highlighted country name…';
+    inp.style.display=''; submit.style.display=''; skip.style.display='';
+    panel.style.display='';
+    gs.questions = questions||buildQs();
+    gs.totalQ=gs.questions.length;
+    loadMediumQ();
+  } else if(mode==='hard'){
+    panel.style.display='none';
+    document.getElementById('g-map-wrap').classList.add('clickable');
+    gs.questions = questions||buildQs();
+    gs.totalQ=gs.questions.length;
+    loadHardQ();
+  }
+  updateHUD();
+  show('s-game');
+  if(mode!=='hard') setTimeout(()=>inp.focus(),80);
+}
+
+function buildQs(reg=null){
+  let ids=Object.keys(C).map(Number);
+  if(reg) ids=ids.filter(id=>C[id].r===reg);
+  return ids.sort(()=>Math.random()-.5).slice(0,20);
+}
+
+// ── EASY ──
+function startEasyTimer(){
+  updateHUD();
+  gTimer=setInterval(()=>{
+    gs.timeLeft--;
+    updateHUD();
+    if(gs.timeLeft<=0){clearInterval(gTimer);endGame();}
+  },1000);
+}
+function submitEasy(){
+  const inp=document.getElementById('g-input');
+  const val=inp.value.trim(); if(!val)return;
+  const id=lookup(val);
+  if(id&&C[id]&&!gs.found.has(id)){
+    gs.found.add(id); gs.score++;
+    d3.select('#g-svg').select(`[data-id="${id}"]`).attr('fill','var(--found-bright)').classed('found',true);
+    addCountryLabel(id, C[id].n, 'found-label');
+    flash('ok'); toast(`✓ ${C[id].n}`);
+  } else if(id&&gs.found.has(id)){
+    flash('err'); toast('Already found!');
+  } else { flash('err'); }
+  inp.value=''; updateHUD();
+}
+
+function addCountryLabel(id, name, cls){
+  if(!worldData) return;
+  const svg=d3.select('#g-svg');
+  const W=960,H=500;
+  const proj=d3.geoNaturalEarth1().scale(153).translate([W/2,H/2]);
+  const path=d3.geoPath().projection(proj);
+  const countries=topojson.feature(worldData,worldData.objects.countries);
+  const feat=countries.features.find(f=>+f.id===+id);
+  if(!feat) return;
+  const bounds=path.bounds(feat);
+  const dx=bounds[1][0]-bounds[0][0], dy=bounds[1][1]-bounds[0][1];
+  if(dx<10||dy<6) return; // skip tiny countries
+  const cx=(bounds[0][0]+bounds[1][0])/2, cy=(bounds[0][1]+bounds[1][1])/2;
+  const fontSize=Math.max(5.5,Math.min(11,dx/name.length*1.5));
+  svg.select(`.clabel-${id}`).remove();
+  svg.append('text')
+    .attr('class',`country-label ${cls} clabel-${id}`)
+    .attr('x',cx).attr('y',cy)
+    .attr('text-anchor','middle').attr('dominant-baseline','middle')
+    .attr('font-size',fontSize)
+    .attr('font-family',"'DM Sans',sans-serif")
+    .attr('font-weight','700')
+    .attr('fill', cls==='found-label'?'rgba(255,255,255,0.85)':'rgba(255,140,140,0.95)')
+    .attr('pointer-events','none')
+    .text(name);
+}
+
+function highlightMissed(id){
+  const el=d3.select('#g-svg').select(`[data-id="${id}"]`);
+  el.attr('fill','#ef4444');
+  setTimeout(()=>el.attr('fill','#7f1d1d'),600);
+}
+
+// ── MEDIUM ──
+function loadMediumQ(){
+  if(gs.qNum>=gs.totalQ){endGame();return;}
+  const id=gs.questions[gs.qNum]; gs.targetId=id;
+  // Reset all non-found
+  d3.select('#g-svg').selectAll('.c-path').each(function(d){
+    if(!gs.found.has(+d.id)) d3.select(this).attr('fill','var(--land)').classed('glowing',false);
+  });
+  // Highlight target
+  d3.select('#g-svg').select(`[data-id="${id}"]`).attr('fill','var(--target-bright)').classed('glowing',true);
+  document.getElementById('float-name').textContent='???';
+  document.getElementById('float-sub').textContent=`Q${gs.qNum+1}/${gs.totalQ} — type the country name`;
+  document.getElementById('float-lives').innerHTML='';
+  document.getElementById('float-card').style.display='block';
+  document.getElementById('g-input').value='';
+  document.getElementById('g-input').focus();
+  document.getElementById('g-hint').style.display='none';
+  document.getElementById('hint-bubble').style.display='none';
+  gs.hintUsed=false; gs.hintCount=0;
+  updateHUD();
+}
+function submitMedium(){
+  const val=document.getElementById('g-input').value.trim(); if(!val)return;
+  const id=lookup(val);
+  if(id===gs.targetId){
+    gs.score+=10; gs.found.add(gs.targetId);
+    d3.select('#g-svg').select(`[data-id="${gs.targetId}"]`)
+      .attr('fill','var(--found-bright)').classed('glowing',false).classed('found',true);
+    flash('ok'); toast(`+10 ✓ ${C[gs.targetId].n}`);
+    gs.targetId=null; gs.qNum++;
+    document.getElementById('float-card').style.display='none';
+    setTimeout(()=>loadMediumQ(),350);
+  } else {
+    gs.score=Math.max(0,gs.score-2); flash('err'); toast('Not quite!');
+    document.getElementById('g-hint').style.display='';
+  }
+  document.getElementById('g-input').value=''; updateHUD();
+}
+function showHint(){
+  const id=gs.targetId; if(!id) return;
+  const name=C[id].n;
+  gs.hintCount=(gs.hintCount||0)+1;
+  const bubble=document.getElementById('hint-bubble');
+  let hint='';
+  if(gs.hintCount===1){
+    // First hint: first letter + length
+    hint=`Starts with "${name[0]}" — ${name.length} letters`;
+  } else if(gs.hintCount===2){
+    // Second hint: show first 2 letters + blanks
+    const shown=name.slice(0,Math.ceil(name.length/3));
+    hint=`Begins with "${shown}…" — region: ${C[id].r}`;
+  } else {
+    // Third hint: capital
+    hint=`Capital city: ${C[id].cap}`;
+    document.getElementById('g-hint').style.display='none';
+  }
+  bubble.textContent=`💡 ${hint}`;
+  bubble.style.display='block';
+  gs.score=Math.max(0,gs.score-1);
+  updateHUD();
+}
+
+function handleSkip(){
+  if(gMode!=='medium')return;
+  const name=C[gs.targetId]?.n||'';
+  document.getElementById('g-hint').style.display='none';
+  document.getElementById('hint-bubble').style.display='none';
+  document.getElementById('float-name').textContent=name;
+  document.getElementById('float-sub').textContent='— skipped —';
+  gs.score=Math.max(0,gs.score-5);
+  d3.select('#g-svg').select(`[data-id="${gs.targetId}"]`).attr('fill','var(--land)').classed('glowing',false);
+  toast(`Skipped: ${name}`);
+  gs.targetId=null; gs.qNum++;
+  setTimeout(()=>{
+    document.getElementById('float-card').style.display='none';
+    loadMediumQ();
+  },1200);
+  updateHUD();
+}
+
+// ── HARD ──
+function loadHardQ(){
+  if(gs.qNum>=gs.totalQ||gs.lives<=0){endGame();return;}
+  const id=gs.questions[gs.qNum]; gs.targetId=id;
+  // Reset wrong flashes
+  d3.select('#g-svg').selectAll('.c-path').each(function(d){
+    if(!gs.found.has(+d.id)&&+d.id!==id)
+      d3.select(this).attr('fill','var(--land)').classed('wrong-flash',false);
+  });
+  const c=C[id];
+  document.getElementById('float-name').textContent=c.n;
+  document.getElementById('float-sub').textContent=`Click it on the map  •  Q${gs.qNum+1}/${gs.totalQ}`;
+  document.getElementById('float-lives').innerHTML='❤️'.repeat(gs.lives)+'🖤'.repeat(10-gs.lives);
+  document.getElementById('float-card').style.display='block';
+  updateHUD();
+}
+function onMapClick(id, which){
+  if(which==='learn') return;
+  if(gMode!=='hard') return;
+  if(!gs.targetId) return;
+  if(gs.found.has(id)) return;
+
+  if(id===gs.targetId){
+    gs.score+=10; gs.found.add(id);
+    d3.select('#g-svg').select(`[data-id="${id}"]`).attr('fill','var(--found-bright)').classed('found',true);
+    toast(`+10 ✓ ${C[id]?.n||'Country'}`);
+    gs.targetId=null; gs.qNum++;
+    document.getElementById('float-card').style.display='none';
+    setTimeout(()=>loadHardQ(),450);
+  } else {
+    gs.lives--;
+    const el=d3.select('#g-svg').select(`[data-id="${id}"]`);
+    el.attr('fill','var(--wrong-bright)').classed('wrong-flash',true);
+    toast(`❌ ${C[id]?.n||'Wrong!'} — ${gs.lives} ${gs.lives===1?'life':'lives'} left`);
+    setTimeout(()=>{ el.attr('fill','var(--land)').classed('wrong-flash',false); },900);
+    document.getElementById('float-lives').innerHTML='❤️'.repeat(gs.lives)+'🖤'.repeat(10-gs.lives);
+    if(gs.lives<=0) setTimeout(()=>endGame(),1000);
+  }
+  updateHUD();
+}
+
+// ── CONTROLS ──
+document.getElementById('g-input').addEventListener('keydown',e=>{ if(e.key==='Enter') handleSubmit(); });
+function handleSubmit(){
+  if(gMode==='easy') submitEasy();
+  else if(gMode==='medium') submitMedium();
+}
+function restartGame(){ startGame(gMode); }
+
+// ── HUD ──
+function updateHUD(){
+  const el=document.getElementById('g-chips');
+  if(gMode==='easy'){
+    const m=Math.floor(gs.timeLeft/60), s=String(gs.timeLeft%60).padStart(2,'0');
+    const danger=gs.timeLeft<60?'color:var(--red)':'';
+    el.innerHTML=`<div class="chip score">Named <span class="v">${gs.score}</span></div><div class="chip timer">Time <span class="v" style="${danger}">${m}:${s}</span></div>`;
+  } else if(gMode==='medium'){
+    el.innerHTML=`<div class="chip score">Score <span class="v">${gs.score}</span></div><div class="chip">Round <span class="v">${gs.qNum}/${gs.totalQ}</span></div>`;
+  } else if(gMode==='hard'){
+    el.innerHTML=`<div class="chip score">Score <span class="v">${gs.score}</span></div><div class="chip">Q <span class="v">${gs.qNum}/${gs.totalQ}</span></div>`;
+  }
+}
+
+// ── RESULTS ──
+function endGame(){
+  clearInterval(gTimer);
+  const mask=document.getElementById('res-mask');
+  mask.classList.add('active');
+  document.getElementById('float-card').style.display='none';
+  document.getElementById('g-input-panel').style.display='';
+
+  let emoji='🌍',title='Game Over',score='',detail='';
+  const total=Object.keys(C).length;
+
+  if(gMode==='easy'){
+    const pct=Math.round(gs.score/total*100);
+    score=`${gs.score} / ${total}`;
+    title=gs.score>=100?'Geography Master!':gs.score>=60?'Impressive!':gs.score>=30?'Not Bad!':'Keep Exploring!';
+    detail=`${pct}% of all countries named`;
+    emoji=gs.score>=100?'🏆':gs.score>=60?'🌟':gs.score>=30?'👍':'🌱';
+    // Highlight missed in red and build pill list
+    const missed=Object.entries(C).filter(([id])=>!gs.found.has(+id));
+    missed.forEach(([id,c])=>{
+      d3.select('#g-svg').select(`[data-id="${id}"]`).attr('fill','#7f1d1d');
+      addCountryLabel(+id, c.n, 'missed-label');
+    });
+    const missedSec=document.getElementById('missed-section');
+    document.getElementById('missed-label').textContent=`${missed.length} countries you missed`;
+    document.getElementById('missed-list').innerHTML=missed
+      .sort((a,b)=>a[1].n.localeCompare(b[1].n))
+      .map(([id,c])=>`<span class="missed-pill" onclick="highlightMissed(${id})">${c.n}</span>`)
+      .join('');
+    missedSec.style.display=missed.length?'block':'none';
+  } else {
+    const max=gs.totalQ*10, pct=Math.round(gs.score/max*100);
+    score=`${gs.score} pts`;
+    title=pct>=90?'Flawless!':pct>=70?'Sharp!':pct>=50?'Decent!':'Keep Practicing!';
+    detail=`${pct}% — ${gs.found.size}/${gs.totalQ} correct`;
+    emoji=pct>=90?'🏆':pct>=70?'🌟':pct>=50?'👍':'🌱';
+  }
+  document.getElementById('res-emoji').textContent=emoji;
+  document.getElementById('res-title').textContent=title;
+  document.getElementById('res-score').textContent=score;
+  document.getElementById('res-detail').textContent=detail;
+}
+
+// ═══════════════════════════════════════════════════════
+//  LEARN MODE
+// ═══════════════════════════════════════════════════════
+function startLearn(region){
+  learnReg=region; learnIdx=0;
+  learnList=Object.entries(C)
+    .filter(([,c])=>c.r===region)
+    .map(([id,c])=>({id:+id,...c}))
+    .sort((a,b)=>a.n.localeCompare(b.n));
+  document.getElementById('l-title').textContent=region;
+  document.getElementById('l-rtag').textContent=region;
+  show('s-learn');
+  if(worldData) showLearnCard();
+}
+function showLearnCard(){
+  if(!learnList.length)return;
+  const c=learnList[learnIdx];
+  const pct=Math.round((learnIdx+1)/learnList.length*100);
+  document.getElementById('l-ctr').textContent=`${learnIdx+1} / ${learnList.length}`;
+  document.getElementById('l-cname').textContent=c.n;
+  document.getElementById('l-prog').style.width=pct+'%';
+  document.getElementById('l-fact').innerHTML=`<strong>Capital:</strong> ${c.cap}<br><strong>Region:</strong> ${c.r}`;
+  // Highlight on learn map
+  if(worldData){
+    d3.select('#l-svg').selectAll('.c-path').attr('fill','var(--land)');
+    d3.select('#l-svg').select(`[data-id="${c.id}"]`).attr('fill','#2196f3');
+  }
+}
+function learnNext(){ learnIdx=(learnIdx+1)%learnList.length; showLearnCard(); }
+function learnPrev(){ learnIdx=(learnIdx-1+learnList.length)%learnList.length; showLearnCard(); }
+function startQuiz(){
+  const qs=learnList.map(c=>c.id).sort(()=>Math.random()-.5).slice(0,Math.min(learnList.length,15));
+  gMode='medium';
+  gs={found:new Set(),score:0,lives:10,targetId:null,totalQ:qs.length,qNum:0,timeLeft:600,questions:qs};
+  clearInterval(gTimer);
+  resetMap('#g-svg');
+  document.getElementById('res-mask').style.display='none';
+  document.getElementById('float-card').style.display='none';
+  document.getElementById('g-map-wrap').classList.remove('clickable');
+  document.getElementById('g-title').textContent=`🎯 Quiz: ${learnReg}`;
+  document.getElementById('g-input').placeholder='Type the highlighted country name…';
+  document.getElementById('g-input').style.display='';
+  document.getElementById('g-submit').style.display='';
+  document.getElementById('g-skip').style.display='';
+  document.getElementById('g-input-panel').style.display='';
+  document.getElementById('g-input').value='';
+  updateHUD();
+  show('s-game');
+  loadMediumQ();
+}
+
+// ═══════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════
+function flash(type){
+  const el=document.getElementById('g-input');
+  el.classList.remove('flash-ok','flash-err');
+  void el.offsetWidth;
+  el.classList.add(type==='ok'?'flash-ok':'flash-err');
+  setTimeout(()=>el.classList.remove('flash-ok','flash-err'),500);
+}
+let toastTmr;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastTmr);
+  toastTmr=setTimeout(()=>el.classList.remove('show'),1800);
+}
+
+// ═══════════════════════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════════════════════
+loadMap();
+</script>
+</body>
+</html>
