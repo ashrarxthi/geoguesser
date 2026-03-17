@@ -329,8 +329,8 @@ html,body { width:100%; height:100%; background:var(--bg); color:var(--text); fo
 /* ── LEARN REGION SELECT ── */
 .region-intro { padding:16px 40px 8px; color:var(--muted); font-size:.8rem; letter-spacing:.1em; text-transform:uppercase; }
 .region-grid {
-  display:grid; grid-template-columns:repeat(3,1fr);
-  gap:12px; padding:8px 40px 32px; flex:1;
+  display:grid; grid-template-columns:repeat(4,1fr);
+  gap:10px; padding:8px 40px 32px; flex:1; overflow-y:auto; align-content:start;
 }
 .region-card {
   background:var(--surf1); border:1px solid var(--border);
@@ -395,6 +395,19 @@ html,body { width:100%; height:100%; background:var(--bg); color:var(--text); fo
   font-weight:600; font-size:.88rem; transition:opacity .2s;
 }
 .btn-quiz:hover { opacity:.85; }
+
+.zoom-controls {
+  position:absolute; right:12px; top:12px; z-index:20;
+  display:flex; flex-direction:column; gap:6px;
+}
+.zoom-btn {
+  width:32px; height:32px; background:var(--surf2); border:1px solid var(--border2);
+  color:var(--text); border-radius:8px; cursor:pointer; font-size:1.1rem;
+  display:flex; align-items:center; justify-content:center;
+  transition:all .15s; font-family:'DM Sans',sans-serif; line-height:1;
+}
+.zoom-btn:hover { background:var(--surf3); border-color:var(--accent-bright); }
+.zoom-btn:active { transform:scale(.93); }
 
 /* loading */
 .map-loading {
@@ -473,6 +486,11 @@ html,body { width:100%; height:100%; background:var(--bg); color:var(--text); fo
     <svg class="world-map" id="g-svg" viewBox="0 0 960 500" preserveAspectRatio="xMidYMid meet">
       <rect width="960" height="500" fill="var(--ocean)"/>
     </svg>
+    <div class="zoom-controls">
+      <button class="zoom-btn" onclick="mapZoom('game',1.5)">+</button>
+      <button class="zoom-btn" onclick="mapZoom('game',.667)">−</button>
+      <button class="zoom-btn" onclick="mapZoomReset('game')" style="font-size:.65rem;font-weight:700;">↺</button>
+    </div>
     <div class="map-loading" id="g-loading">Loading map…</div>
     <div class="hint-bubble" id="hint-bubble"></div>
     <div class="float-card" id="float-card" style="display:none">
@@ -531,6 +549,11 @@ html,body { width:100%; height:100%; background:var(--bg); color:var(--text); fo
       <svg class="world-map" id="l-svg" viewBox="0 0 960 500" preserveAspectRatio="xMidYMid meet">
         <rect width="960" height="500" fill="var(--ocean)"/>
       </svg>
+      <div class="zoom-controls">
+        <button class="zoom-btn" onclick="mapZoom('learn',1.5)">+</button>
+        <button class="zoom-btn" onclick="mapZoom('learn',.667)">−</button>
+        <button class="zoom-btn" onclick="mapZoomReset('learn')" style="font-size:.65rem;font-weight:700;">↺</button>
+      </div>
       <div class="map-loading" id="l-loading" style="display:none">Loading…</div>
     </div>
     <div class="learn-panel">
@@ -580,6 +603,11 @@ html,body { width:100%; height:100%; background:var(--bg); color:var(--text); fo
     <svg class="world-map" id="usa-svg" viewBox="0 0 960 600" preserveAspectRatio="xMidYMid meet">
       <rect width="960" height="600" fill="var(--ocean)"/>
     </svg>
+    <div class="zoom-controls">
+      <button class="zoom-btn" onclick="mapZoom('usa',1.5)">+</button>
+      <button class="zoom-btn" onclick="mapZoom('usa',.667)">−</button>
+      <button class="zoom-btn" onclick="mapZoomReset('usa')" style="font-size:.65rem;font-weight:700;">↺</button>
+    </div>
     <div class="results-mask" id="usa-res-mask">
       <div class="found-panel" id="usa-found-panel">
         <div class="found-panel-title" id="usa-found-title">States you named</div>
@@ -873,13 +901,45 @@ for(const [a,name] of Object.entries(ALTS)){
 function lookup(s){ return LOOKUP[norm(s)]??null; }
 
 const REGIONS = [
-  {name:'Europe',      icon:'🏰', color:'#2196f3'},
-  {name:'Asia',        icon:'⛩️',  color:'#e91e63'},
-  {name:'Africa',      icon:'🦁', color:'#ff9800'},
-  {name:'North America',icon:'🗽', color:'#4caf50'},
-  {name:'South America',icon:'🌿', color:'#009688'},
-  {name:'Oceania',     icon:'🦘', color:'#9c27b0'},
+  {name:'North Africa',    icon:'🏜️',  color:'#ff9800', parent:'Africa',
+   ids:[12,818,434,504,729,788,732]},
+  {name:'West Africa',     icon:'🥁',  color:'#f57c00', parent:'Africa',
+   ids:[204,854,132,384,270,288,324,430,466,478,562,566,686,694,768]},
+  {name:'East Africa',     icon:'🦒',  color:'#ef6c00', parent:'Africa',
+   ids:[108,174,262,231,404,450,508,646,706,728,834,800,716]},
+  {name:'Central Africa',  icon:'🌴',  color:'#e65100', parent:'Africa',
+   ids:[24,120,140,178,180,226,624,638,678,894]},
+  {name:'Southern Africa', icon:'🦁',  color:'#bf360c', parent:'Africa',
+   ids:[72,426,454,516,710,748]},
+  {name:'Western Europe',  icon:'🏰',  color:'#1565c0', parent:'Europe',
+   ids:[40,56,208,246,250,276,372,442,528,578,620,724,752,756,826]},
+  {name:'Eastern Europe',  icon:'⛪',  color:'#1976d2', parent:'Europe',
+   ids:[100,112,203,233,348,428,440,498,616,642,643,703,804,807]},
+  {name:'Southern Europe', icon:'🏛️',  color:'#1e88e5', parent:'Europe',
+   ids:[8,70,191,196,300,380,470,499,674,688,705]},
+  {name:'Middle East',     icon:'🕌',  color:'#ad1457', parent:'Asia',
+   ids:[48,368,376,400,414,422,512,634,682,784,887,760]},
+  {name:'Central Asia',    icon:'🏔️',  color:'#c2185b', parent:'Asia',
+   ids:[31,51,268,398,417,762,795,860]},
+  {name:'South Asia',      icon:'🛕',  color:'#d81b60', parent:'Asia',
+   ids:[50,64,356,462,524,586,144]},
+  {name:'East Asia',       icon:'⛩️',  color:'#e91e63', parent:'Asia',
+   ids:[156,392,408,410,496]},
+  {name:'Southeast Asia',  icon:'🌺',  color:'#f06292', parent:'Asia',
+   ids:[96,116,360,418,458,104,608,702,764,704,626]},
+  {name:'North America',   icon:'🗽',  color:'#2e7d32', parent:'Americas',
+   ids:[84,124,192,214,308,332,340,484,558,591,659,662,670,780,840,222,320,388,44,52,212]},
+  {name:'South America',   icon:'🌿',  color:'#388e3c', parent:'Americas',
+   ids:[32,68,76,152,170,218,328,600,604,740,858,862]},
+  {name:'Oceania',         icon:'🦘',  color:'#6a1b9a', parent:'Oceania',
+   ids:[36,242,296,554,583,584,585,598,882,798,548,90]},
 ];
+
+// Build sub-region lookup for countries
+const SUBREGION = {};
+for(const r of REGIONS){
+  if(r.ids) r.ids.forEach(id=>{ if(!SUBREGION[id]) SUBREGION[id]=r.name; });
+}
 
 // ═══════════════════════════════════════════════════════
 //  STATE
@@ -933,6 +993,27 @@ function drawMap(sel, which){
     .on('click', function(ev,d){ onMapClick(+d.id, which); })
     .on('mouseenter', function(ev,d){ onHover(this,+d.id,which,true); })
     .on('mouseleave', function(ev,d){ onHover(this,+d.id,which,false); });
+  initZoom(sel, which);
+}
+
+const zoomBehaviors = {};
+function initZoom(svgSel, which){
+  const svg = d3.select(svgSel);
+  const z = d3.zoom().scaleExtent([1,8]).on('zoom',(ev)=>{
+    svg.select('.map-g').attr('transform', ev.transform);
+    svg.selectAll('.country-label').attr('transform', ev.transform);
+  });
+  svg.call(z);
+  svg.on('dblclick.zoom', null);
+  zoomBehaviors[which] = {zoom:z, svg};
+}
+function mapZoom(which, factor){
+  const b=zoomBehaviors[which]; if(!b) return;
+  b.svg.transition().duration(300).call(b.zoom.scaleBy, factor);
+}
+function mapZoomReset(which){
+  const b=zoomBehaviors[which]; if(!b) return;
+  b.svg.transition().duration(400).call(b.zoom.transform, d3.zoomIdentity);
 }
 
 function onHover(el,id,which,enter){
@@ -972,15 +1053,15 @@ function goHome(){
   show('s-home');
 }
 function showRegions(){
-  const cnts={};
-  for(const c of Object.values(C)) cnts[c.r]=(cnts[c.r]||0)+1;
-  document.getElementById('region-grid').innerHTML = REGIONS.map(r=>
-    `<div class="region-card" onclick="startLearn('${r.name}')">
+  const grid = document.getElementById('region-grid');
+  grid.innerHTML = REGIONS.map(r=>{
+    const cnt = r.ids ? r.ids.filter(id=>C[id]).length : Object.values(C).filter(c=>c.r===r.name).length;
+    return `<div class="region-card" onclick="startLearn('${r.name}')">
       <div class="r-icon">${r.icon}</div>
       <div class="r-name">${r.name}</div>
-      <div class="r-count">${cnts[r.name]||0} countries</div>
-    </div>`
-  ).join('');
+      <div class="r-count">${cnt} countries</div>
+    </div>`;
+  }).join('');
   show('s-regions');
 }
 function backToRegions(){ show('s-regions'); }
@@ -1223,6 +1304,12 @@ function onMapClick(id, which){
 
 // ── CONTROLS ──
 document.getElementById('g-input').addEventListener('keydown',e=>{ if(e.key==='Enter') handleSubmit(); });
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('s-learn').classList.contains('active')){
+    if(e.key==='ArrowRight') learnNext();
+    else if(e.key==='ArrowLeft') learnPrev();
+  }
+});
 function handleSubmit(){
   if(gMode==='easy') submitEasy();
   else if(gMode==='medium') submitMedium();
@@ -1300,10 +1387,18 @@ function endGame(){
 // ═══════════════════════════════════════════════════════
 function startLearn(region){
   learnReg=region; learnIdx=0;
-  learnList=Object.entries(C)
-    .filter(([,c])=>c.r===region)
-    .map(([id,c])=>({id:+id,...c}))
-    .sort((a,b)=>a.n.localeCompare(b.n));
+  const regObj = REGIONS.find(r=>r.name===region);
+  if(regObj && regObj.ids){
+    learnList = regObj.ids
+      .filter(id=>C[id])
+      .map(id=>({id:+id,...C[id]}))
+      .sort((a,b)=>a.n.localeCompare(b.n));
+  } else {
+    learnList=Object.entries(C)
+      .filter(([,c])=>c.r===region)
+      .map(([id,c])=>({id:+id,...c}))
+      .sort((a,b)=>a.n.localeCompare(b.n));
+  }
   document.getElementById('l-title').textContent=region;
   document.getElementById('l-rtag').textContent=region;
   show('s-learn');
@@ -1315,13 +1410,47 @@ function showLearnCard(){
   const pct=Math.round((learnIdx+1)/learnList.length*100);
   document.getElementById('l-ctr').textContent=`${learnIdx+1} / ${learnList.length}`;
   document.getElementById('l-cname').textContent=c.n;
+  document.getElementById('l-rtag').textContent=learnReg;
   document.getElementById('l-prog').style.width=pct+'%';
-  document.getElementById('l-fact').innerHTML=`<strong>Capital:</strong> ${c.cap}<br><strong>Region:</strong> ${c.r}`;
-  // Highlight on learn map
+  // Populate stat cards
+  document.getElementById('l-capital').textContent=c.cap||'—';
+  document.getElementById('l-pop').textContent=c.pop?(c.pop>=1?c.pop.toFixed(1)+'M':(c.pop*1000).toFixed(0)+'K'):'—';
+  document.getElementById('l-area').textContent=c.area?c.area.toLocaleString()+' km²':'—';
+  // Fun badge — largest/smallest/most populous callout
+  let badge='';
+  if(c.area>5000000) badge="0001F30D ONE OF THE WORLD'S LARGEST COUNTRIES BY AREA";
+  else if(c.area&&c.area<1000) badge='🔬 One of the smallest countries in the world';
+  else if(c.pop&&c.pop>500) badge='👥 One of the most populous countries on Earth';
+  else if(c.pop&&c.pop<0.1) badge='🏝️ Population under 100,000';
+  document.getElementById('l-badge').textContent=badge||'';
+  document.getElementById('l-badge').style.display=badge?'block':'none';
+  // Highlight on learn map — paths are inside .map-g group
   if(worldData){
-    d3.select('#l-svg').selectAll('.c-path').attr('fill','var(--land)');
-    d3.select('#l-svg').select(`[data-id="${c.id}"]`).attr('fill','#2196f3');
+    const lsvg=d3.select('#l-svg');
+    lsvg.select('.map-g').selectAll('.c-path').attr('fill','var(--land)');
+    lsvg.select('.map-g').select(`[data-id="${c.id}"]`).attr('fill','#2196f3');
+    // Also zoom to the country
+    zoomToCountry(c.id);
   }
+}
+
+function zoomToCountry(id){
+  if(!worldData||!lProj||!lPath) return;
+  const countries=topojson.feature(worldData,worldData.objects.countries);
+  const feat=countries.features.find(f=>+f.id===+id);
+  if(!feat) return;
+  const bounds=lPath.bounds(feat);
+  const dx=bounds[1][0]-bounds[0][0], dy=bounds[1][1]-bounds[0][1];
+  const cx=(bounds[0][0]+bounds[1][0])/2, cy=(bounds[0][1]+bounds[1][1])/2;
+  const W=960, H=500;
+  // Don't zoom for very large countries (Russia, Canada, etc.)
+  if(dx>400||dy>300){ mapZoomReset('learn'); return; }
+  const scale=Math.min(8, Math.max(1.5, Math.min(W/dx, H/dy)*0.45));
+  const tx=W/2-scale*cx, ty=H/2-scale*cy;
+  const b=zoomBehaviors['learn']; if(!b) return;
+  b.svg.transition().duration(600).call(
+    b.zoom.transform, d3.zoomIdentity.translate(tx,ty).scale(scale)
+  );
 }
 function learnNext(){ learnIdx=(learnIdx+1)%learnList.length; showLearnCard(); }
 function learnPrev(){ learnIdx=(learnIdx-1+learnList.length)%learnList.length; showLearnCard(); }
@@ -1433,6 +1562,7 @@ function drawUSAMap(){
   svg.selectAll('.c-path').data(states.features).enter()
     .append('path').attr('class','c-path')
     .attr('d',path).attr('data-id',d=>+d.id);
+  initZoom('#usa-svg','usa');
 }
 
 function startUSA(){
