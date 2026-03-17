@@ -627,25 +627,6 @@ const C = {
   704:{n:"Vietnam",r:"Asia",cap:"Hanoi",pop:98.2,area:331212},
   887:{n:"Yemen",r:"Asia",cap:"Sana'a",pop:34.4,area:527968},
   894:{n:"Zambia",r:"Africa",cap:"Lusaka",pop:20.0,area:752618},
-};
-
-// Build name lookup
-function norm(s){ return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z\s]/g,'').trim(); }
-const LOOKUP = {};
-for(const [id,c] of Object.entries(C)) LOOKUP[norm(c.n)] = +id;
-const ALTS = {
-  'usa':840,'us':840,'america':840,'united states of america':840,
-  'uk':826,'britain':826,'great britain':826,'england':826,
-  'drc':180,'dr congo':180,'congo dr':180,'democratic republic of congo':180,'democratic republic of the congo':180,
-  'congo republic':178,'republic of congo':178,
-  'czechia':203,'czech':203,
-  'ivory coast':384,'cote divoire':384,
-  'burma':104,
-  'turkiye':792,
-  'swaziland':748,
-  'macedonia':807,
-  'east timor':626,
-  'south korea':410,'north korea':408,
   20:{n:"Andorra",r:"Europe",cap:"Andorra la Vella",pop:0.08,area:468},
   28:{n:"Antigua and Barbuda",r:"North America",cap:"Saint John's",pop:0.1,area:442},
   44:{n:"Bahamas",r:"North America",cap:"Nassau",pop:0.4,area:13943},
@@ -680,7 +661,40 @@ const ALTS = {
   798:{n:"Tuvalu",r:"Oceania",cap:"Funafuti",pop:0.01,area:26},
   520:{n:"Nauru",r:"Oceania",cap:"Yaren",pop:0.01,area:21}
 };
-for(const [a,id] of Object.entries(ALTS)) LOOKUP[norm(a)]=id;
+
+// Build name lookup
+const ALTS = {
+  'usa':'United States','us':'United States','united states of america':'United States',
+  'uk':'United Kingdom','great britain':'United Kingdom','england':'United Kingdom',
+  'uae':'United Arab Emirates',
+  'drc':'DR Congo','congo dr':'DR Congo','democratic republic of the congo':'DR Congo','democratic republic of congo':'DR Congo',
+  'republic of congo':'Republic of the Congo','congo republic':'Republic of the Congo','congo brazzaville':'Republic of the Congo',
+  'czechia':'Czech Republic','czech':'Czech Republic',
+  'burma':'Myanmar',
+  'russia':'Russia',
+  'south korea':'South Korea','north korea':'North Korea',
+  'iran':'Iran','persia':'Iran',
+  'syria':'Syria',
+  'tanzania':'Tanzania',
+  'bolivia':'Bolivia',
+  'venezuela':'Venezuela',
+  'ivory coast':'Ivory Coast','cote divoire':'Ivory Coast',
+  'east timor':'Timor-Leste',
+  'cabo verde':'Cape Verde',
+  'eswatini':'Eswatini','swaziland':'Eswatini',
+  'north macedonia':'North Macedonia','macedonia':'North Macedonia',
+  'turkiye':'Turkey',
+  'palestine':'Palestine','west bank':'Palestine',
+};
+const LOOKUP = {};
+for(const [k,v] of Object.entries(C)) {
+  LOOKUP[norm(C[k].n)] = +k;
+}
+function norm(s){ return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z\s]/g,'').trim(); }
+for(const [a,name] of Object.entries(ALTS)){
+  const id = Object.entries(C).find(([,c])=>c.n===name)?.[0];
+  if(id) LOOKUP[norm(a)] = +id;
+}
 function lookup(s){ return LOOKUP[norm(s)]??null; }
 
 const REGIONS = [
