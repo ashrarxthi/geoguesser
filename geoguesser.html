@@ -1051,7 +1051,8 @@ function updateHUD(){
   if(gMode==='easy'){
     const m=Math.floor(gs.timeLeft/60), s=String(gs.timeLeft%60).padStart(2,'0');
     const danger=gs.timeLeft<60?'color:var(--red)':'';
-    el.innerHTML=`<div class="chip score">Named <span class="v">${gs.score}</span></div><div class="chip timer">Time <span class="v" style="${danger}">${m}:${s}</span></div>`;
+    const total=Object.keys(C).length;
+    el.innerHTML=`<div class="chip score">Named <span class="v">${gs.score}</span></div><div class="chip"><span class="v">${gs.score}/${total}</span></div><div class="chip timer">Time <span class="v" style="${danger}">${m}:${s}</span></div>`;
   } else if(gMode==='medium'){
     el.innerHTML=`<div class="chip score">Score <span class="v">${gs.score}</span></div><div class="chip">Round <span class="v">${gs.qNum}/${gs.totalQ}</span></div>`;
   } else if(gMode==='hard'){
