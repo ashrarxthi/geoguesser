@@ -947,7 +947,7 @@ for(const r of REGIONS){
 let worldData = null;
 let gMode = null, gs = {};
 let gTimer = null;
-let learnReg = null, learnIdx = 0, learnList = [];
+let learnReg = null, learnIdx = 0, learnList = [], learnVisited = new Set();
 let lProj = null, lPath = null, lZoomed = false;
 
 // ═══════════════════════════════════════════════════════
@@ -1399,10 +1399,15 @@ function startLearn(region){
       .map(([id,c])=>({id:+id,...c}))
       .sort((a,b)=>a.n.localeCompare(b.n));
   }
+  learnVisited = new Set();
   document.getElementById('l-title').textContent=region;
   document.getElementById('l-rtag').textContent=region;
   show('s-learn');
-  if(worldData) showLearnCard();
+  if(worldData){
+    // Ensure learn map is drawn fresh
+    drawMap('#l-svg','learn');
+    setTimeout(()=>showLearnCard(), 50);
+  }
 }
 function showLearnCard(){
   if(!learnList.length)return;
@@ -1418,20 +1423,39 @@ function showLearnCard(){
   document.getElementById('l-area').textContent=c.area?c.area.toLocaleString()+' km²':'—';
   // Fun badge — largest/smallest/most populous callout
   let badge='';
-  if(c.area>5000000) badge="0001F30D ONE OF THE WORLD'S LARGEST COUNTRIES BY AREA";
-  else if(c.area&&c.area<1000) badge='🔬 One of the smallest countries in the world';
-  else if(c.pop&&c.pop>500) badge='👥 One of the most populous countries on Earth';
-  else if(c.pop&&c.pop<0.1) badge='🏝️ Population under 100,000';
+  if(c.area>5000000) badge='One of the largest countries by area';
+  else if(c.area&&c.area<1000) badge='One of the smallest countries in the world';
+  else if(c.pop&&c.pop>500) badge='One of the most populous countries on Earth';
+  else if(c.pop&&c.pop<0.1) badge='Population under 100,000';
   document.getElementById('l-badge').textContent=badge||'';
   document.getElementById('l-badge').style.display=badge?'block':'none';
-  // Highlight on learn map — paths are inside .map-g group
-  if(worldData){
-    const lsvg=d3.select('#l-svg');
-    lsvg.select('.map-g').selectAll('.c-path').attr('fill','var(--land)');
-    lsvg.select('.map-g').select(`[data-id="${c.id}"]`).attr('fill','#2196f3');
-    // Also zoom to the country
-    zoomToCountry(c.id);
-  }
+  // Highlight on learn map
+  highlightLearnCountry(c.id);
+}
+
+function highlightLearnCountry(targetId){
+  if(!worldData) return;
+  const svg = d3.select('#l-svg');
+  // Reset all non-visited paths
+  svg.selectAll('path.c-path').each(function(){
+    const el = d3.select(this);
+    const id = +el.attr('data-id');
+    if(learnVisited.has(id)){
+      el.attr('fill','rgba(33,150,243,0.35)'); // dim visited
+    } else {
+      el.attr('fill','var(--land)');
+    }
+  });
+  // Highlight current country bright
+  svg.selectAll('path.c-path').each(function(){
+    const el = d3.select(this);
+    if(+el.attr('data-id') === +targetId){
+      el.attr('fill','#2196f3');
+    }
+  });
+  // Mark as visited
+  learnVisited.add(+targetId);
+  zoomToCountry(targetId);
 }
 
 function zoomToCountry(id){
