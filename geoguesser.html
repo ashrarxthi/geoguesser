@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GeoGuesser</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #07111e;
@@ -38,64 +38,127 @@ html,body { width:100%; height:100%; background:var(--bg); color:var(--text); fo
 .screen.active { display:flex; }
 
 /* ── HOME ── */
-.home-wrap { display:flex; flex-direction:column; height:100vh; }
-.home-hero {
-  padding:36px 48px 28px;
-  display:flex; align-items:flex-end; gap:20px;
-  border-bottom:1px solid var(--border);
-  background: linear-gradient(180deg, #0a1a2f 0%, var(--bg) 100%);
+.home-wrap { display:flex; flex-direction:column; height:100vh; overflow:hidden; position:relative; }
+
+/* Subtle dot grid background */
+.home-wrap::before {
+  content:''; position:absolute; inset:0; pointer-events:none; z-index:0;
+  background-image: radial-gradient(circle, rgba(33,150,243,.07) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
+
+/* Glow orbs */
+.home-wrap::after {
+  content:''; position:absolute; pointer-events:none; z-index:0;
+  width:600px; height:600px; border-radius:50%;
+  background: radial-gradient(circle, rgba(33,150,243,.06) 0%, transparent 70%);
+  top:-200px; right:-100px;
+}
+
+.home-hero {
+  padding:40px 52px 32px;
+  display:flex; align-items:flex-end; justify-content:space-between;
+  border-bottom:1px solid var(--border);
+  position:relative; z-index:1;
+  background: linear-gradient(180deg, rgba(10,26,47,.9) 0%, transparent 100%);
+}
+
+.hero-left {}
+.hero-right { text-align:right; }
+
 .logo {
   font-family:'Bebas Neue',sans-serif;
-  font-size:4rem;
-  letter-spacing:.05em;
-  background: linear-gradient(135deg, #8bbff5 0%, #e4eeff 60%);
+  font-size:5rem;
+  letter-spacing:.04em;
+  background: linear-gradient(135deg, #60a5fa 0%, #e4eeff 45%, #93c5fd 100%);
   -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-  line-height:1;
+  line-height:.9;
+  filter: drop-shadow(0 0 30px rgba(96,165,250,.25));
 }
-.tagline { color:var(--muted); font-size:.85rem; letter-spacing:.12em; text-transform:uppercase; margin-bottom:6px; }
-.star-count { color:var(--muted); font-size:.8rem; font-family:'JetBrains Mono',monospace; }
+.tagline {
+  color:var(--muted); font-size:.78rem; letter-spacing:.18em;
+  text-transform:uppercase; margin-top:10px;
+  font-family:'Space Grotesk',sans-serif;
+}
+.hero-stat {
+  font-family:'JetBrains Mono',monospace;
+  font-size:.72rem; color:var(--muted);
+  background:var(--surf2); border:1px solid var(--border);
+  padding:4px 12px; border-radius:20px; display:inline-block;
+  margin-bottom:8px;
+}
+.hero-stat span { color:var(--accent-bright); font-weight:500; }
 
 .mode-grid {
-  display:grid; grid-template-columns:1fr 1fr; gap:14px;
-  padding:24px 48px 32px; flex:1;
+  display:grid; grid-template-columns:1fr 1fr; gap:16px;
+  padding:28px 52px 36px; flex:1; position:relative; z-index:1;
 }
+
 .mode-card {
-  background:var(--surf1); border:1px solid var(--border);
-  border-radius:16px; padding:26px 24px;
-  cursor:pointer; transition:all .22s ease;
-  display:flex; flex-direction:column; gap:10px;
+  background: linear-gradient(145deg, var(--surf1) 0%, rgba(13,30,48,.8) 100%);
+  border:1px solid var(--border);
+  border-radius:18px; padding:28px 26px;
+  cursor:pointer; transition:all .25s cubic-bezier(.34,1.56,.64,1);
+  display:flex; flex-direction:column; gap:0;
   position:relative; overflow:hidden;
 }
+
+/* Animated shimmer border on hover */
+.mode-card::before {
+  content:''; position:absolute; inset:-1px; border-radius:19px;
+  opacity:0; transition:opacity .3s;
+  pointer-events:none; z-index:0;
+}
+.mode-card.easy::before   { background:linear-gradient(135deg, rgba(25,168,87,.5), transparent 60%); }
+.mode-card.medium::before { background:linear-gradient(135deg, rgba(240,180,41,.5), transparent 60%); }
+.mode-card.hard::before   { background:linear-gradient(135deg, rgba(229,57,53,.5), transparent 60%); }
+.mode-card.learn::before  { background:linear-gradient(135deg, rgba(33,150,243,.5), transparent 60%); }
+
 .mode-card::after {
   content:''; position:absolute; inset:0; opacity:0;
-  transition:opacity .22s; pointer-events:none;
-  border-radius:inherit;
+  transition:opacity .25s; pointer-events:none; border-radius:inherit; z-index:0;
 }
-.mode-card.easy::after   { background:radial-gradient(ellipse at 0% 0%, rgba(25,168,87,.1) 0%, transparent 65%); }
-.mode-card.medium::after { background:radial-gradient(ellipse at 0% 0%, rgba(240,180,41,.1) 0%, transparent 65%); }
-.mode-card.hard::after   { background:radial-gradient(ellipse at 0% 0%, rgba(229,57,53,.1) 0%, transparent 65%); }
-.mode-card.learn::after  { background:radial-gradient(ellipse at 0% 0%, rgba(33,150,243,.1) 0%, transparent 65%); }
-.mode-card:hover { transform:translateY(-3px); }
-.mode-card:hover::after { opacity:1; }
-.mode-card.easy:hover   { border-color:rgba(25,168,87,.45); }
-.mode-card.medium:hover { border-color:rgba(240,180,41,.45); }
-.mode-card.hard:hover   { border-color:rgba(229,57,53,.45); }
-.mode-card.learn:hover  { border-color:rgba(33,150,243,.45); }
-.mode-card:active { transform:translateY(-1px); }
+.mode-card.easy::after   { background:radial-gradient(ellipse at 10% 10%, rgba(25,168,87,.12) 0%, transparent 65%); }
+.mode-card.medium::after { background:radial-gradient(ellipse at 10% 10%, rgba(240,180,41,.12) 0%, transparent 65%); }
+.mode-card.hard::after   { background:radial-gradient(ellipse at 10% 10%, rgba(229,57,53,.12) 0%, transparent 65%); }
+.mode-card.learn::after  { background:radial-gradient(ellipse at 10% 10%, rgba(33,150,243,.12) 0%, transparent 65%); }
 
-.card-icon { font-size:1.8rem; }
-.card-top { display:flex; align-items:center; gap:10px; }
+.mode-card:hover { transform:translateY(-4px) scale(1.01); box-shadow: 0 20px 40px rgba(0,0,0,.4); }
+.mode-card:hover::before { opacity:1; }
+.mode-card:hover::after { opacity:1; }
+.mode-card.easy:hover   { border-color:rgba(25,168,87,.5); }
+.mode-card.medium:hover { border-color:rgba(240,180,41,.5); }
+.mode-card.hard:hover   { border-color:rgba(229,57,53,.5); }
+.mode-card.learn:hover  { border-color:rgba(33,150,243,.5); }
+.mode-card:active { transform:translateY(-1px) scale(.99); }
+
+.mode-card > * { position:relative; z-index:1; }
+
+.card-icon { font-size:2rem; margin-bottom:14px; display:block; }
+.card-top { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
 .card-badge {
-  font-size:.65rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase;
+  font-size:.6rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
   padding:3px 10px; border-radius:20px; display:inline-block;
+  font-family:'Space Grotesk',sans-serif;
 }
-.badge-easy   { background:rgba(25,168,87,.14); color:#4acc88; }
-.badge-medium { background:rgba(240,180,41,.14); color:#f5c842; }
-.badge-hard   { background:rgba(229,57,53,.14);  color:#e87070; }
-.badge-learn  { background:rgba(33,150,243,.14);  color:#67b5f5; }
-.card-title { font-size:1.15rem; font-weight:600; }
-.card-desc  { color:var(--muted); font-size:.83rem; line-height:1.6; flex:1; }
+.badge-easy   { background:rgba(25,168,87,.15); color:#4acc88; border:1px solid rgba(25,168,87,.2); }
+.badge-medium { background:rgba(240,180,41,.15); color:#f5c842; border:1px solid rgba(240,180,41,.2); }
+.badge-hard   { background:rgba(229,57,53,.15);  color:#e87070; border:1px solid rgba(229,57,53,.2); }
+.badge-learn  { background:rgba(33,150,243,.15);  color:#67b5f5; border:1px solid rgba(33,150,243,.2); }
+.card-title {
+  font-size:1.3rem; font-weight:700; margin-bottom:8px;
+  font-family:'Space Grotesk',sans-serif; letter-spacing:-.01em;
+}
+.card-desc  { color:var(--muted); font-size:.82rem; line-height:1.65; flex:1; }
+
+/* Arrow indicator */
+.card-arrow {
+  margin-top:18px; font-size:.75rem; color:var(--muted);
+  display:flex; align-items:center; gap:6px;
+  font-family:'Space Grotesk',sans-serif; font-weight:500;
+  transition:all .2s; letter-spacing:.02em;
+}
+.mode-card:hover .card-arrow { color:var(--text); gap:10px; }
 
 /* ── SHARED HEADER ── */
 .hdr {
@@ -324,37 +387,42 @@ html,body { width:100%; height:100%; background:var(--bg); color:var(--text); fo
 <div class="screen active" id="s-home">
   <div class="home-wrap">
     <div class="home-hero">
-      <div>
+      <div class="hero-left">
         <div class="logo">GeoGuesser</div>
-      </div>
-      <div>
         <div class="tagline">How well do you know the world?</div>
+      </div>
+      <div class="hero-right">
+        <div class="hero-stat"><span id="home-country-count">195</span> countries</div>
       </div>
     </div>
     <div class="mode-grid">
       <div class="mode-card easy" onclick="startGame('easy')">
-        <div class="card-icon">⌨️</div>
-        <div class="card-top"><span class="card-badge badge-easy">Easy</span></div>
+        <span class="card-icon">🗺️</span>
+        <div class="card-top"><span class="card-badge badge-easy">Easy · 15 min</span></div>
         <div class="card-title">Fill the Map</div>
-        <div class="card-desc">Type any country name and watch it light up on the map. 15 minutes on the clock — how many can you name?</div>
+        <div class="card-desc">Type any country name and watch it light up on the map. How many can you name before time runs out?</div>
+        <div class="card-arrow">Play now →</div>
       </div>
       <div class="mode-card medium" onclick="startGame('medium')">
-        <div class="card-icon">🔍</div>
-        <div class="card-top"><span class="card-badge badge-medium">Medium</span></div>
+        <span class="card-icon">🔍</span>
+        <div class="card-top"><span class="card-badge badge-medium">Medium · 20 Qs</span></div>
         <div class="card-title">Name That Country</div>
-        <div class="card-desc">A country pulses gold on the map. Type its name before skipping. Race through 20 countries, no hints.</div>
+        <div class="card-desc">A country pulses gold on the map. Type its name. Use hints if you're stuck — but they'll cost you points.</div>
+        <div class="card-arrow">Play now →</div>
       </div>
       <div class="mode-card hard" onclick="startGame('hard')">
-        <div class="card-icon">📍</div>
-        <div class="card-top"><span class="card-badge badge-hard">Hard</span></div>
+        <span class="card-icon">📍</span>
+        <div class="card-top"><span class="card-badge badge-hard">Hard · 10 strikes</span></div>
         <div class="card-title">Find It</div>
-        <div class="card-desc">A country name appears at the top. Click the right spot on the map. No highlights. 10 strikes. Good luck.</div>
+        <div class="card-desc">A country name appears. Click the exact spot on the map with no highlights. Good luck.</div>
+        <div class="card-arrow">Play now →</div>
       </div>
       <div class="mode-card learn" onclick="showRegions()">
-        <div class="card-icon">📚</div>
+        <span class="card-icon">📚</span>
         <div class="card-top"><span class="card-badge badge-learn">Learn</span></div>
         <div class="card-title">Learn by Region</div>
-        <div class="card-desc">Study countries region by region with an interactive map and flashcard guide. Then quiz yourself!</div>
+        <div class="card-desc">Study countries with capitals, populations, and map locations. Then quiz yourself on each region.</div>
+        <div class="card-arrow">Explore →</div>
       </div>
     </div>
   </div>
@@ -1208,6 +1276,7 @@ function toast(msg){
 //  BOOT
 // ═══════════════════════════════════════════════════════
 loadMap();
+document.getElementById('home-country-count').textContent = Object.keys(C).length;
 </script>
 </body>
 </html>
