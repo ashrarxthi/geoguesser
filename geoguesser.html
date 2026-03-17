@@ -1467,7 +1467,7 @@ function highlightLearnCountry(targetId){
     const cx=(bounds[0][0]+bounds[1][0])/2, cy=(bounds[0][1]+bounds[1][1])/2;
     const name = learnList.find(c=>+c.id===+id)?.n || '';
     const isSmall = dx<16 || dy<10;
-    const fontSize = isSmall ? 8 : Math.max(8, Math.min(14, dx/name.length*1.5));
+    const fontSize = isSmall ? 6 : Math.max(6, Math.min(9, dx/name.length*0.9));
     const labelY = isSmall ? cy - Math.max(dy/2, 8) - 6 : cy;
     g.append('text')
       .attr('class','learn-country-label')
