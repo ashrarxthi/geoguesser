@@ -255,7 +255,7 @@ html,body { width:100%; height:100%; background:var(--bg); color:var(--text); fo
 .btn-end {
   background:none; border:1px solid rgba(229,57,53,.35); color:#e87070;
   padding:10px 16px; border-radius:10px; cursor:pointer;
-  font-family:'DM Sans',sans-serif; font-size:.82rem; transition:all .2s; display:none;
+  font-family:'DM Sans',sans-serif; font-size:.82rem; transition:all .2s;
 }
 .btn-end:hover { background:rgba(229,57,53,.12); border-color:#e53935; }
 .hint-bubble {
@@ -506,7 +506,7 @@ html,body { width:100%; height:100%; background:var(--bg); color:var(--text); fo
     <button class="btn-go" id="g-submit" onclick="handleSubmit()">→</button>
     <button class="btn-skip" id="g-skip" onclick="handleSkip()" style="display:none">Skip</button>
     <button class="btn-hint" id="g-hint" onclick="showHint()">💡 Hint</button>
-    <button class="btn-end" id="g-end" onclick="endGame()">End Game</button>
+    <button class="btn-end" id="g-end" onclick="endGame()" style="display:none">End Game</button>
   </div>
 </div>
 
@@ -1009,7 +1009,7 @@ function startGame(mode, questions=null){
   if(mode==='easy'){
     inp.placeholder='Type any country name…';
     inp.style.display=skip.style.display=''; submit.style.display=''; skip.style.display='none';
-    document.getElementById('g-end').style.display='';
+    document.getElementById('g-end').style.display='inline-flex';
     panel.style.display='';
     if(questions){ gs.questions=questions; gs.totalQ=questions.length; }
     startEasyTimer();
