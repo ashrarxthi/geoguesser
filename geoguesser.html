@@ -252,6 +252,12 @@ html,body { width:100%; height:100%; background:var(--bg); color:var(--text); fo
   font-family:'DM Sans',sans-serif; font-size:.82rem; transition:all .2s; display:none;
 }
 .btn-hint:hover { background:rgba(251,191,36,.22); border-color:#fbbf24; }
+.btn-end {
+  background:none; border:1px solid rgba(229,57,53,.35); color:#e87070;
+  padding:10px 16px; border-radius:10px; cursor:pointer;
+  font-family:'DM Sans',sans-serif; font-size:.82rem; transition:all .2s; display:none;
+}
+.btn-end:hover { background:rgba(229,57,53,.12); border-color:#e53935; }
 .hint-bubble {
   position:absolute; top:10px; left:50%; transform:translateX(-50%);
   background:rgba(18,28,48,.95); border:1px solid rgba(251,191,36,.4);
@@ -500,6 +506,7 @@ html,body { width:100%; height:100%; background:var(--bg); color:var(--text); fo
     <button class="btn-go" id="g-submit" onclick="handleSubmit()">→</button>
     <button class="btn-skip" id="g-skip" onclick="handleSkip()" style="display:none">Skip</button>
     <button class="btn-hint" id="g-hint" onclick="showHint()">💡 Hint</button>
+    <button class="btn-end" id="g-end" onclick="endGame()">End Game</button>
   </div>
 </div>
 
@@ -1002,18 +1009,21 @@ function startGame(mode, questions=null){
   if(mode==='easy'){
     inp.placeholder='Type any country name…';
     inp.style.display=skip.style.display=''; submit.style.display=''; skip.style.display='none';
+    document.getElementById('g-end').style.display='';
     panel.style.display='';
     if(questions){ gs.questions=questions; gs.totalQ=questions.length; }
     startEasyTimer();
   } else if(mode==='medium'){
     inp.placeholder='Type the highlighted country name…';
     inp.style.display=''; submit.style.display=''; skip.style.display='';
+    document.getElementById('g-end').style.display='none';
     panel.style.display='';
     gs.questions = questions||buildQs();
     gs.totalQ=gs.questions.length;
     loadMediumQ();
   } else if(mode==='hard'){
     panel.style.display='none';
+    document.getElementById('g-end').style.display='none';
     document.getElementById('g-map-wrap').classList.add('clickable');
     gs.questions = questions||buildQs();
     gs.totalQ=gs.questions.length;
@@ -1067,7 +1077,10 @@ function addCountryLabel(id, name, cls){
   const dx=bounds[1][0]-bounds[0][0], dy=bounds[1][1]-bounds[0][1];
   if(dx<10||dy<6) return; // skip tiny countries
   const cx=(bounds[0][0]+bounds[1][0])/2, cy=(bounds[0][1]+bounds[1][1])/2;
-  const fontSize=Math.max(5.5,Math.min(11,dx/name.length*1.5));
+  // Missed labels: smaller cap, lighter weight
+  const isMissed = cls==='missed-label';
+  const maxSize = isMissed ? 8 : 11;
+  const fontSize=Math.max(5, Math.min(maxSize, dx/name.length*(isMissed?1.0:1.5)));
   svg.select(`.clabel-${id}`).remove();
   svg.append('text')
     .attr('class',`country-label ${cls} clabel-${id}`)
@@ -1075,8 +1088,8 @@ function addCountryLabel(id, name, cls){
     .attr('text-anchor','middle').attr('dominant-baseline','middle')
     .attr('font-size',fontSize)
     .attr('font-family',"'DM Sans',sans-serif")
-    .attr('font-weight','700')
-    .attr('fill', cls==='found-label'?'rgba(255,255,255,0.85)':'rgba(255,140,140,0.95)')
+    .attr('font-weight', isMissed ? '400' : '600')
+    .attr('fill', isMissed ? 'rgba(255,120,120,0.75)' : 'rgba(255,255,255,0.85)')
     .attr('pointer-events','none')
     .text(name);
 }
