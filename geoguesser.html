@@ -1454,24 +1454,69 @@ function highlightLearnCountry(targetId){
     }
   });
   learnVisited.add(+targetId);
+  // Add label on the highlighted country
+  const svgEl = d3.select('#l-svg');
+  svgEl.selectAll('.learn-country-label').remove();
+  if(!worldData||!lPath) { zoomToCountry(targetId); return; }
+  const countries = topojson.feature(worldData, worldData.objects.countries);
+  const feat = countries.features.find(f=>+f.id===+targetId);
+  if(feat){
+    const bounds = lPath.bounds(feat);
+    const dx = bounds[1][0]-bounds[0][0], dy = bounds[1][1]-bounds[0][1];
+    const cx=(bounds[0][0]+bounds[1][0])/2, cy=(bounds[0][1]+bounds[1][1])/2;
+    const name = learnList.find(c=>+c.id===+targetId)?.n || '';
+    const isSmall = dx<14 || dy<10;
+    const fontSize = isSmall ? 9 : Math.max(9, Math.min(16, dx/name.length*1.6));
+    const labelY = isSmall ? cy-Math.max(dy,8)-6 : cy; // float above tiny countries
+    const g = svgEl.select('.map-g').node() ? svgEl.select('.map-g') : svgEl;
+    const textEl = g.append('text')
+      .attr('class','learn-country-label')
+      .attr('x',cx).attr('y',labelY)
+      .attr('text-anchor','middle').attr('dominant-baseline','middle')
+      .attr('font-size',fontSize)
+      .attr('font-family',"'Space Grotesk','DM Sans',sans-serif")
+      .attr('font-weight','700')
+      .style('fill','#fff')
+      .attr('pointer-events','none')
+      .text(name);
+    // Add a leader line for tiny countries
+    if(isSmall){
+      g.append('line')
+        .attr('class','learn-country-label')
+        .attr('x1',cx).attr('y1',labelY+5)
+        .attr('x2',cx).attr('y2',cy)
+        .attr('stroke','rgba(255,255,255,0.5)')
+        .attr('stroke-width',1)
+        .attr('pointer-events','none');
+    }
+  }
   zoomToCountry(targetId);
 }
 
 function zoomToCountry(id){
+  // Only zoom once when entering a region (learnIdx===0), not on every Next
+  if(learnIdx !== 0) return;
   if(!worldData||!lProj||!lPath) return;
   const countries=topojson.feature(worldData,worldData.objects.countries);
-  const feat=countries.features.find(f=>+f.id===+id);
-  if(!feat) return;
-  const bounds=lPath.bounds(feat);
-  const dx=bounds[1][0]-bounds[0][0], dy=bounds[1][1]-bounds[0][1];
-  const cx=(bounds[0][0]+bounds[1][0])/2, cy=(bounds[0][1]+bounds[1][1])/2;
+  // Zoom to fit ALL countries in the current region
+  const regionIds = learnList.map(c=>c.id);
+  const feats = countries.features.filter(f=>regionIds.includes(+f.id));
+  if(!feats.length) return;
+  // Get combined bounding box of all region countries
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  feats.forEach(feat=>{
+    const b=lPath.bounds(feat);
+    minX=Math.min(minX,b[0][0]); minY=Math.min(minY,b[0][1]);
+    maxX=Math.max(maxX,b[1][0]); maxY=Math.max(maxY,b[1][1]);
+  });
+  const dx=maxX-minX, dy=maxY-minY;
+  const cx=(minX+maxX)/2, cy=(minY+maxY)/2;
   const W=960, H=500;
-  // Don't zoom for very large countries (Russia, Canada, etc.)
-  if(dx>400||dy>300){ mapZoomReset('learn'); return; }
-  const scale=Math.min(8, Math.max(1.5, Math.min(W/dx, H/dy)*0.45));
+  const padding=1.3;
+  const scale=Math.min(6, Math.max(1, Math.min(W/dx, H/dy)/padding));
   const tx=W/2-scale*cx, ty=H/2-scale*cy;
   const b=zoomBehaviors['learn']; if(!b) return;
-  b.svg.transition().duration(600).call(
+  b.svg.transition().duration(700).call(
     b.zoom.transform, d3.zoomIdentity.translate(tx,ty).scale(scale)
   );
 }
