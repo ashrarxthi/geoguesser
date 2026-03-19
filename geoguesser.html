@@ -7,16 +7,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #07111e;
-  --surf1: #0d1e30;
-  --surf2: #122438;
-  --surf3: #17304a;
+  --bg: #0c1d2e;
+  --surf1: #132536;
+  --surf2: #192e42;
+  --surf3: #1e3a52;
   --border: #1e3d5c;
   --border2: #2a5478;
   --text: #e4eeff;
   --muted: #4d7494;
-  --ocean: #091626;
-  --land: #1c3450;
+  --ocean: #0e1f30;
+  --land: #224060;
   --land-hover: #254468;
   --found: #0d5c31;
   --found-bright: #19a857;
@@ -1458,6 +1458,7 @@ function highlightLearnCountry(targetId){
 
   // 2. Remove ALL learn labels and redraw from scratch every time
   svg.selectAll('.learn-country-label').remove();
+  svg.select('.label-overlay').remove();
 
   // Helper to draw one label
   function drawLabel(id, isCurrent){
@@ -1467,15 +1468,19 @@ function highlightLearnCountry(targetId){
     const dx = bounds[1][0]-bounds[0][0], dy = bounds[1][1]-bounds[0][1];
     const cx=(bounds[0][0]+bounds[1][0])/2, cy=(bounds[0][1]+bounds[1][1])/2;
     const name = learnList.find(c=>+c.id===+id)?.n || '';
-    const isSmall = dx<16 || dy<10;
-    // Divide by current zoom scale so labels stay the same visual size regardless of zoom
-    const zoomScale = zoomBehaviors['learn']?.currentTransform?.k || 1;
-    const baseFontSize = isSmall ? 7 : Math.max(7, Math.min(11, dx/name.length*0.9));
-    const fontSize = baseFontSize / zoomScale;
-    const labelY = isSmall ? cy - Math.max(dy/2, 8) - 6 : cy;
-    g.append('text')
+    // Apply zoom transform to get screen-space coords
+    const t = zoomBehaviors['learn']?.currentTransform || d3.zoomIdentity;
+    const sx = t.applyX(cx), sy = t.applyY(cy);
+    const sdx = dx * t.k;
+    const isSmall = sdx < 18;
+    const fontSize = isSmall ? 9 : Math.max(9, Math.min(12, sdx / name.length * 0.85));
+    const labelY = isSmall ? sy - 12 : sy;
+    // Use overlay group outside map-g so labels don't scale with zoom
+    let overlay = svg.select('.label-overlay');
+    if(overlay.empty()) overlay = svg.append('g').attr('class','label-overlay');
+    overlay.append('text')
       .attr('class','learn-country-label')
-      .attr('x', cx).attr('y', labelY)
+      .attr('x', sx).attr('y', labelY)
       .attr('text-anchor','middle').attr('dominant-baseline','middle')
       .attr('font-size', fontSize)
       .attr('font-family',"'Space Grotesk','DM Sans',sans-serif")
@@ -1484,12 +1489,12 @@ function highlightLearnCountry(targetId){
       .attr('pointer-events','none')
       .text(name);
     if(isSmall){
-      g.append('line')
+      overlay.append('line')
         .attr('class','learn-country-label')
-        .attr('x1',cx).attr('y1',labelY+5)
-        .attr('x2',cx).attr('y2',cy)
-        .attr('stroke','rgba(255,255,255,0.35)')
-        .attr('stroke-width',0.8)
+        .attr('x1',sx).attr('y1',labelY+4)
+        .attr('x2',sx).attr('y2',sy)
+        .attr('stroke','rgba(255,255,255,0.3)')
+        .attr('stroke-width',0.7)
         .attr('pointer-events','none');
     }
   }
