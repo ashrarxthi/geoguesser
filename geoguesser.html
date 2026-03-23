@@ -890,6 +890,9 @@ const ALTS = {
   'central africa':'Central African Republic','car':'Central African Republic',
   'guinea bissau':'Guinea-Bissau',
   'png':'Papua New Guinea','new guinea':'Papua New Guinea',
+  'taiwan':'Taiwan','republic of china':'Taiwan','roc':'Taiwan',
+  'western sahara':'Western Sahara',
+  'vatican':'Vatican City','holy see':'Vatican City',
 };
 function norm(s){ return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z\s]/g,'').trim(); }
 const LOOKUP = {};
@@ -916,7 +919,7 @@ const REGIONS = [
   {name:'Eastern Europe',  icon:'⛪',  color:'#1976d2', parent:'Europe',
    ids:[100,112,203,233,348,428,440,498,616,642,643,703,804,807]},
   {name:'Southern Europe', icon:'🏛️',  color:'#1e88e5', parent:'Europe',
-   ids:[8,70,191,196,300,380,470,499,674,688,705]},
+   ids:[8,70,191,196,300,336,380,470,499,674,688,705]},
   {name:'Middle East',     icon:'🕌',  color:'#ad1457', parent:'Asia',
    ids:[48,368,376,400,414,422,512,634,682,784,887,760]},
   {name:'Central Asia',    icon:'🏔️',  color:'#c2185b', parent:'Asia',
@@ -924,7 +927,7 @@ const REGIONS = [
   {name:'South Asia',      icon:'🛕',  color:'#d81b60', parent:'Asia',
    ids:[50,64,356,462,524,586,144]},
   {name:'East Asia',       icon:'⛩️',  color:'#e91e63', parent:'Asia',
-   ids:[156,392,408,410,496]},
+   ids:[156,158,392,408,410,496]},
   {name:'Southeast Asia',  icon:'🌺',  color:'#f06292', parent:'Asia',
    ids:[96,116,360,418,458,104,608,702,764,704,626]},
   {name:'North America',   icon:'🗽',  color:'#2e7d32', parent:'Americas',
@@ -1742,4 +1745,7 @@ document.getElementById('usa-input').addEventListener('keydown',e=>{ if(e.key===
 loadUSAMap();
 </script>
 </body>
-</html>
+</html>,
+  158:{n:"Taiwan",r:"Asia",cap:"Taipei",pop:23.6,area:36193},
+  732:{n:"Western Sahara",r:"Africa",cap:"El Aaiún",pop:0.6,area:266000},
+  336:{n:"Vatican City",r:"Europe",cap:"Vatican City",pop:0.001,area:0}
