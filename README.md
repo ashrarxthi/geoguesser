@@ -13,7 +13,7 @@ Test your geography knowledge here → [Play Now](https://ashrarxthi.github.io/g
 
 **📍 Find It** — A country name is shown. Click the right spot on the map with no highlights. 10 strikes.
 
-**📚 Learn by Region** — Study countries region by region with capitals, populations, and geography facts. Then quiz yourself.
+**📚 Learn by Region** — Study countries region by region with capitals, populations, and geography facts. Then quiz yourself! 
 
 ---
 
